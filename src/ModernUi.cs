@@ -24,7 +24,7 @@ sealed partial class MemorySelectV3Form {
   Color hover=Color.FromArgb(Math.Min(255,accent.R+28),Math.Min(255,accent.G+28),Math.Min(255,accent.B+28)),down=Color.FromArgb(accent.R*4/5,accent.G*4/5,accent.B*4/5);
   Action<Control> paint=null;
   paint=c=>{
-   if(c is MapViewer||c is DungeonRadar)return;
+   if(c is MapViewer||c is DungeonRadar||c is StatPanel)return;
    c.BackColor=bg;c.ForeColor=fg;
    if(c is TextBox||c is ComboBox||c is NumericUpDown||c is ListBox)c.BackColor=input;
    if(c is GroupBox)c.ForeColor=accent;
@@ -35,6 +35,7 @@ sealed partial class MemorySelectV3Form {
    foreach(Control child in c.Controls)paint(child);
   };
   paint(this);
+  statPanel.PanelColor=bg;statPanel.TextColor=fg;statPanel.Invalidate();
   if(sidebar!=null){sidebar.BackColor=sidebarColor;sidebar.Invalidate();}
  }
  static Color C(int r,int g,int b){return Color.FromArgb(r,g,b);} void OpenManual(){string path=Path.Combine(V3Settings.DirectoryPath,"Kullanim-Kilavuzu.pdf");Directory.CreateDirectory(V3Settings.DirectoryPath);using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("manual.pdf"))using(var file=File.Create(path))stream.CopyTo(file);Process.Start(new ProcessStartInfo(path){UseShellExecute=true});}

@@ -67,6 +67,10 @@ Güncellemeler RSA imzasıyla doğrulanır. Doğrulama genel anahtarı `data\upd
 Grim Crypt sekmesindeki "Çalıştırma sırası" paneli, seçtiğin Solo Trial dungeonları seçtiğin sırayla otomatik çalıştırır. Dungeon'u tabloda çift tıkla, **Ekle / Çıkar** düğmesiyle ya da haritada **Shift+tık** ile sıraya al; ▲ ▼ ile sırayı değiştir. Sıra haritada numara ve kesik çizgiyle görünür.
 
 **Sırayı başlat:** bot girişe yürür, girer, dungeon'u bitirir, **Dungeon Exit NPC'si** ile çıkar (oyun verisindeki ışınlanma kaydı: Donwhang, 5000 altın) ve sıradakine geçer. Bitirilen dungeon "Girdim" olarak işaretlenir. Sıra bitince "Sıra bitince Return Scroll ile şehre dön" açıksa bir Return Scroll kullanır. Çıkış otomatik yapılamazsa bot loga yazar ve Dungeon Exit'e elle tıklamanı bekler.
+## Karakter durumu
+
+Av / Ayarlar sekmesinin üstündeki panel HP (kırmızı), MP (mavi), EXP (yeşil) ve SP (sarı) çubuklarını canlı gösterir; oturum toplamı, dakikalık ve saatlik EXP/SP kazancı, seviyeye ve sonraki SP'ye kalan süreyi hesaplar. Hız son beş dakikanın ortalamasıdır (oturum daha kısaysa oturum ortalaması). Ölümde kaybedilen EXP kazanç sayılmaz. Değerler karakter nesnesinden okunur (HP/MP, seviye, EXP, SP alanları); seviye-EXP tablosu oyun verisinden alınmıştır (data\level-exp.json).
+
 ## Harita
 
 Grim Crypt sekmesindeki **Dünya haritası**, oyunun kendi minimap karolarından birleştirilir (kaynak: [JellyBitz/xSROMap](https://github.com/JellyBitz/xSROMap), MIT). Koordinat eşlemesi kesindir: harita pikseli = oyun koordinatı / 4 + ofset. Yeniden üretmek için `tools\build-world-map.ps1`. Nanzhang bölgesinin karosu bu veri setinde yoktur.

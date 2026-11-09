@@ -288,6 +288,13 @@ PASS · Queue list shows the picked dungeons in order
 PASS · Queue clears
 PASS · Dungeon Exit NPC teleporter has the Donwhang and Nanzhang destinations in the transit data
 PASS · Dungeon Exit teleporter gate uses the exit NPC model the bot already tracks
+PASS · Level table matches the game data
+PASS · Exp gain and per-minute rate are measured from the session
+PASS · SP gain counts the 400-point sub steps
+PASS · An exp loss after a death is never a negative gain
+PASS · Gains continue from the lower exp after a death
+PASS · A level up counts the rest of the old level plus the new exp
+PASS · Durations are written in hours, minutes and seconds
 PASS · Grim holds position only after the mapped survey is complete
 PASS · Fixed function keys removed and function key assignment refused
 PASS · Custom single key and Ctrl combination supported

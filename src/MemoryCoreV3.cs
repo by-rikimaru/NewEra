@@ -47,7 +47,7 @@ sealed class Monster {
  public uint Uid,Model,Address; public string Name;public Position Position;public bool Alive;public uint? Health;public int Rank=-1;public bool Party;
 }
 sealed class Snapshot {
- public bool MountKnown;public uint MountUid;public List<WorldNpc> Npcs=new List<WorldNpc>();public Position Player; public uint Selected;public GrimObservation Grim=new GrimObservation();public bool PlayerAlive;public int Berserk=-1;public bool SpeedKnown,SpeedActive,InventoryKnown;public int? MinDurability;public List<BagItem> Items=new List<BagItem>();public List<Monster> Monsters=new List<Monster>();
+ public bool MountKnown;public uint MountUid;public List<WorldNpc> Npcs=new List<WorldNpc>();public Position Player; public uint Selected;public GrimObservation Grim=new GrimObservation();public bool PlayerAlive;public bool StatsKnown;public uint Hp,MaxHp,Mp,MaxMp,SpExp,Sp;public int Level;public ulong Exp;public int Berserk=-1;public bool SpeedKnown,SpeedActive,InventoryKnown;public int? MinDurability;public List<BagItem> Items=new List<BagItem>();public List<Monster> Monsters=new List<Monster>();
 }
 sealed class GameReader:IDisposable {
  const string ClientHash="51081AC1F776A38FE0AF58E2A961BFA9E8166506AE26DC8DCFD8008736725C05";
@@ -72,10 +72,12 @@ sealed class GameReader:IDisposable {
   if(float.IsNaN(p.LocalX)||float.IsInfinity(p.LocalX)||float.IsNaN(p.LocalY)||float.IsInfinity(p.LocalY)||Math.Abs(p.LocalX)>1000000||Math.Abs(p.LocalY)>1000000)throw new IOException("Geçersiz koordinat.");
   p.X=p.Outside?((p.Region&255)-135)*192+p.LocalX/10.0:p.LocalX/10.0;p.Y=p.Outside?((p.Region>>8)-92)*192+p.LocalY/10.0:p.LocalY/10.0;return p;
  }
- internal Snapshot Capture(){
+ // Character object layout (verified on two characters): HP/MP +0x450/+0x454, max HP/MP +0x458/+0x45C,
+ // level byte +0x868, exp (64-bit) +0x870, SP exp (0-399) +0x878, SP +0x880.
+ void ReadStats(uint player,Snapshot s){try{byte[] b=Read(player+0x450,16);uint hp=BitConverter.ToUInt32(b,0),mp=BitConverter.ToUInt32(b,4),maxHp=BitConverter.ToUInt32(b,8),maxMp=BitConverter.ToUInt32(b,12);int level=Read(player+0x868,1)[0];ulong exp=BitConverter.ToUInt64(Read(player+0x870,8),0);uint spExp=U32(player+0x878),sp=U32(player+0x880);if(maxHp==0||maxHp>10000000||hp>maxHp||maxMp>10000000||mp>maxMp||level<1||level>140||spExp>=400||sp>1000000000)return;s.Hp=hp;s.Mp=mp;s.MaxHp=maxHp;s.MaxMp=maxMp;s.Level=level;s.Exp=exp;s.SpExp=spExp;s.Sp=sp;s.StatsKnown=true;}catch(IOException){}} internal Snapshot Capture(){
   Process.Refresh();if(Process.HasExited||Process.StartTime.ToUniversalTime().Ticks!=started)throw new IOException("Hedef işlem kapandı.");
   uint player=Global(0xAEF5EC);if(player<65536)throw new IOException("Karakter dünyada değil.");
-  var snap=new Snapshot();snap.Player=ReadPosition(player);snap.PlayerAlive=(U32(player+0x65c)&1)!=0;int gauge=Read(player+0x886,1)[0];snap.Berserk=gauge<=5?gauge:-1;ReadMaintenance(player,snap);ReadGrim(snap);try{if(GuardBase!=0){snap.MountUid=U32(GuardBase+0xc216d8);snap.MountKnown=true;}}catch(IOException){}
+  var snap=new Snapshot();snap.Player=ReadPosition(player);snap.PlayerAlive=(U32(player+0x65c)&1)!=0;int gauge=Read(player+0x886,1)[0];snap.Berserk=gauge<=5?gauge:-1;ReadStats(player,snap);ReadMaintenance(player,snap);ReadGrim(snap);try{if(GuardBase!=0){snap.MountUid=U32(GuardBase+0xc216d8);snap.MountKnown=true;}}catch(IOException){}
   try {uint ui=Global(0xD0F80C);if(ui!=0){snap.Selected=U32(ui+0x62c);if(snap.Selected==0)snap.Selected=U32(ui+0x628);}}catch(IOException){}
   uint root=Global(0xAEF5FC);if(root<65536)throw new IOException("Nesne listesi bulunamadı.");
   var stack=new Stack<uint>();var seen=new HashSet<uint>();stack.Push(U32(root+4));
