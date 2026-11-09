@@ -1,0 +1,11 @@
+﻿# Derleme çıktıları
+*.exe
+release/
+work/road-audit.txt
+# Gizli anahtarlar ve kişisel ayarlar: ASLA commit etme
+updates-private-key.xml
+NewEraKeys/
+*.pfx
+*.snk
+settings.json
+events.log

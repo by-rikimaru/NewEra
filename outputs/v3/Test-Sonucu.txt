@@ -1,0 +1,274 @@
+PASS · D01 Solo Trial portal linked from correct entrance
+PASS · D01 exact count completion matches
+PASS · D01 incomplete count rejected
+PASS · D01 other dungeon count rejected
+PASS · D02 Solo Trial portal linked from correct entrance
+PASS · D02 exact count completion matches
+PASS · D02 incomplete count rejected
+PASS · D02 other dungeon count rejected
+PASS · D03 Solo Trial portal linked from correct entrance
+PASS · D03 exact count completion matches
+PASS · D03 incomplete count rejected
+PASS · D03 other dungeon count rejected
+PASS · D04 Solo Trial portal linked from correct entrance
+PASS · D04 exact count completion matches
+PASS · D04 incomplete count rejected
+PASS · D04 other dungeon count rejected
+PASS · D05 Solo Trial portal linked from correct entrance
+PASS · D05 exact count completion matches
+PASS · D05 incomplete count rejected
+PASS · D05 other dungeon count rejected
+PASS · D06 Solo Trial portal linked from correct entrance
+PASS · D06 exact count completion matches
+PASS · D06 incomplete count rejected
+PASS · D06 other dungeon count rejected
+PASS · D07 Solo Trial portal linked from correct entrance
+PASS · D07 exact count completion matches
+PASS · D07 incomplete count rejected
+PASS · D07 other dungeon count rejected
+PASS · D08 Solo Trial portal linked from correct entrance
+PASS · D08 exact count completion matches
+PASS · D08 incomplete count rejected
+PASS · D08 other dungeon count rejected
+PASS · D09 Solo Trial portal linked from correct entrance
+PASS · D09 exact count completion matches
+PASS · D09 incomplete count rejected
+PASS · D09 other dungeon count rejected
+PASS · D10 Solo Trial portal linked from correct entrance
+PASS · D10 exact count completion matches
+PASS · D10 incomplete count rejected
+PASS · D10 other dungeon count rejected
+PASS · D11 Solo Trial portal linked from correct entrance
+PASS · D11 exact count completion matches
+PASS · D11 incomplete count rejected
+PASS · D11 other dungeon count rejected
+PASS · D12 Solo Trial portal linked from correct entrance
+PASS · D12 exact count completion matches
+PASS · D12 incomplete count rejected
+PASS · D12 other dungeon count rejected
+PASS · D13 Solo Trial portal linked from correct entrance
+PASS · D13 exact count completion matches
+PASS · D13 incomplete count rejected
+PASS · D13 other dungeon count rejected
+PASS · D14 Solo Trial portal linked from correct entrance
+PASS · D14 exact count completion matches
+PASS · D14 incomplete count rejected
+PASS · D14 other dungeon count rejected
+PASS · D15 Solo Trial portal linked from correct entrance
+PASS · D15 exact count completion matches
+PASS · D15 incomplete count rejected
+PASS · D15 other dungeon count rejected
+PASS · D16 Solo Trial portal linked from correct entrance
+PASS · D16 exact count completion matches
+PASS · D16 incomplete count rejected
+PASS · D16 other dungeon count rejected
+PASS · D17 Solo Trial portal linked from correct entrance
+PASS · D17 exact count completion matches
+PASS · D17 incomplete count rejected
+PASS · D17 other dungeon count rejected
+PASS · D18 Solo Trial portal linked from correct entrance
+PASS · D18 exact count completion matches
+PASS · D18 incomplete count rejected
+PASS · D18 other dungeon count rejected
+PASS · D01 initial room has three distinct floor waypoints
+PASS · D02 initial room has three distinct floor waypoints
+PASS · D03 initial room has three distinct floor waypoints
+PASS · D04 initial room has three distinct floor waypoints
+PASS · D05 initial room has three distinct floor waypoints
+PASS · D06 initial room has three distinct floor waypoints
+PASS · D07 initial room has three distinct floor waypoints
+PASS · D08 initial room has three distinct floor waypoints
+PASS · D09 initial room has three distinct floor waypoints
+PASS · D10 initial room has three distinct floor waypoints
+PASS · D11 initial room has three distinct floor waypoints
+PASS · D12 initial room has three distinct floor waypoints
+PASS · D13 initial room has three distinct floor waypoints
+PASS · D14 initial room has three distinct floor waypoints
+PASS · D15 initial room has three distinct floor waypoints
+PASS · D16 initial room has three distinct floor waypoints
+PASS · D17 initial room has three distinct floor waypoints
+PASS · D18 initial room has three distinct floor waypoints
+PASS · Unloaded mobs do not advance room and Envy remains eligible
+PASS · Duplicate dead snapshots do not advance the room
+PASS · Three distinct confirmed deaths advance to the next room
+PASS · Return and Reverse item sets do not overlap
+PASS · Normal and event Return variants loaded
+PASS · Hotan to Roc route includes declared transit
+PASS · D01 entrance has a road route from its city
+PASS · D02 entrance has a road route from its city
+PASS · D03 entrance has a road route from its city
+PASS · D04 entrance has a road route from its city
+PASS · D05 entrance has a road route from its city
+PASS · D06 entrance has a road route from its city
+PASS · D07 entrance has a road route from its city
+PASS · D08 entrance has a road route from its city
+PASS · D09 entrance has a road route from its city
+PASS · D10 entrance has a road route from its city
+PASS · D11 entrance has a road route from its city
+PASS · D11 route crosses the unlinked gap and ends at the entrance
+PASS · D12 entrance has a road route from its city
+PASS · D12 route crosses the unlinked gap and ends at the entrance
+PASS · D13 entrance has a road route from its city
+PASS · D14 entrance has a road route from its city
+PASS · D15 entrance has a road route from its city
+PASS · D16 entrance has a road route from its city
+PASS · D17 entrance has a road route from its city
+PASS · D18 entrance has a road route from its city
+PASS · Jangan screenshot start reaches a D17 local approach without teleport
+PASS · Normal movement keeps the route; a position jump requests a new route
+PASS · Walking shortcut requires clear ground and preserves ferry steps
+PASS · Nanzhang screenshot route uses the Jangan gate and reaches the D17 approach
+PASS · Malformed teleport payload rejected
+PASS · Travel arrival accepts exact 5-unit boundary
+PASS · Travel does not arrive beyond 5 units
+PASS · Mount native result normalized without repeated toggles
+PASS · Automatic Return disabled by default
+PASS · phBot ferry script maps to the known directed link
+PASS · Unrecognized imported teleport is rejected
+PASS · Ferry NPC offset 30 units from arrival point resolves by model
+PASS · Teleport waits for real NPC 5-unit approach
+PASS · Same-model distant ferry is excluded
+PASS · Fine travel grid follows verified narrow passage and 5-unit arrival
+PASS · Navigation detours around a wall instead of direct XY movement
+PASS · Every planned edge passes independent collision geometry
+PASS · Range constraint rejects an otherwise possible out-of-area detour
+PASS · Portal approach stops beside occupied gate instead of demanding its exact center
+PASS · Unreachable terrain fails closed
+PASS · Smoothing never cuts through wall
+PASS · Smoothing never cuts through wall
+PASS · Smoothing never cuts through wall
+PASS · Smoothing never cuts through wall
+PASS · Shared walker reaches destination through verified detour
+PASS · Lookahead combines grid cells without blind long movement
+PASS · Blocked attack approach first returns to previous position
+PASS · Failed edge stays excluded while alternative route succeeds
+PASS · Accepted commands without actual progress trigger replans then bounded stop
+PASS · Unfocused time does not trigger a false obstacle recovery
+PASS · Long route advances through verified loaded legs and replans after each leg
+PASS · A partial route cannot invent progress when no connected terrain exists
+PASS · All eighteen Solo Trial catalog entries exist
+PASS · D01 Solo Trial loads its own embedded capture
+PASS · D01 survey reaches every captured area through connected corridors
+PASS · D02 Solo Trial loads its own embedded capture
+PASS · D02 survey reaches every captured area through connected corridors
+PASS · D03 Solo Trial loads its own embedded capture
+PASS · D03 survey reaches every captured area through connected corridors
+PASS · D04 Solo Trial loads its own embedded capture
+PASS · D04 survey reaches every captured area through connected corridors
+PASS · D05 Solo Trial loads its own embedded capture
+PASS · D05 survey reaches every captured area through connected corridors
+PASS · D06 Solo Trial loads its own embedded capture
+PASS · D06 survey reaches every captured area through connected corridors
+PASS · D07 Solo Trial loads its own embedded capture
+PASS · D07 survey reaches every captured area through connected corridors
+PASS · D08 Solo Trial loads its own embedded capture
+PASS · D08 survey reaches every captured area through connected corridors
+PASS · D09 Solo Trial loads its own embedded capture
+PASS · D09 survey reaches every captured area through connected corridors
+PASS · D10 Solo Trial loads its own embedded capture
+PASS · D10 survey reaches every captured area through connected corridors
+PASS · D11 Solo Trial loads its own embedded capture
+PASS · D11 survey reaches every captured area through connected corridors
+PASS · D12 Solo Trial loads its own embedded capture
+PASS · D12 survey reaches every captured area through connected corridors
+PASS · D13 Solo Trial loads its own embedded capture
+PASS · D13 survey reaches every captured area through connected corridors
+PASS · D14 Solo Trial loads its own embedded capture
+PASS · D14 survey reaches every captured area through connected corridors
+PASS · D15 Solo Trial loads its own embedded capture
+PASS · D15 survey reaches every captured area through connected corridors
+PASS · D16 Solo Trial loads its own embedded capture
+PASS · D16 survey reaches every captured area through connected corridors
+PASS · D17 Solo Trial loads its own embedded capture
+PASS · D17 survey reaches every captured area through connected corridors
+PASS · D18 Solo Trial loads its own embedded capture
+PASS · D18 survey reaches every captured area through connected corridors
+PASS · Other modes do not silently inherit Trial-only captures
+PASS · D13 Solo Trial captured map is embedded and validated
+PASS · Captured Solo Trial map is not silently reused for another mode
+PASS · An empty entrance room does not complete the whole dungeon
+PASS · Survey crosses connected corridors and covers all D13 rooms before waiting
+PASS · No further wandering route after all mapped areas are checked
+PASS · All checked rooms still require a stable fifteen-second no-mob observation
+PASS · A late mob wave prevents local clear even after the survey
+PASS · New mobs resume combat from the final waiting position
+PASS · A temporarily blocked living mob is never counted as a completed clear
+PASS · Local surveyed-area clear does not forge a server completion flag
+PASS · Coverage follows corridor distance instead of marking rooms through walls
+PASS · Multi mob: nearest allowed name; rejects unlisted/dead/outside
+PASS · Blocked target moves to other selected species
+PASS · Ban expires at boundary
+PASS · Live target retained while valid
+PASS · One death counted
+PASS · Repeated dead snapshots do not inflate count
+PASS · No town command while unfocused
+PASS · Town requested after wait
+PASS · Town request sent once
+PASS · Town arrival requires known client sector
+PASS · Town settles before reverse
+PASS · No early reverse
+PASS · One reverse after stable town
+PASS · Reverse not consumed twice
+PASS · Resume only when death point reached
+PASS · Death limit stops BEFORE town or scroll
+PASS · Party resurrection resumes and keeps death count
+PASS · Recovery timeout stops without resend
+PASS · No reverse in bag stops
+PASS · Late resurrection at death point after town request resumes
+PASS · Actual New Era Hotan spawn recognized
+PASS · Speed item cannot be used as reverse
+PASS · Equipment slot cannot be reverse
+PASS · 72 variants / 18 actual entrances loaded
+PASS · Each difficulty has 18 dungeons
+PASS · Current gate rows world XY conversion
+PASS · D12 coordinate recovered from gate, not invented from missing image
+PASS · Grim region alone cannot arm unknown instance
+PASS · Entry with HUD starts geometry mapping
+PASS · Empty nearby monster list is NOT dungeon complete
+PASS · Negative completion phrase rejected
+PASS · Positive server completion stops and waits
+PASS · Regular Grim with explicit inside selection supports absent Solo HUD
+PASS · Navigation explores only reachable bounded cells
+PASS · Mapped small room coverage
+PASS · No phantom route after coverage
+PASS · Full navigation coverage still waits fifteen seconds
+PASS · Even a banned or unselected alive mob prevents clear
+PASS · New mob resets clear timer; clear only at new stable boundary
+PASS · Room not declared clear while unvisited ground remains
+PASS · Exploration follows connected 8-unit navigation edges
+PASS · Eight argument navigation call fits before payload boundary
+PASS · Travel uses bounded 32 unit steps
+PASS · Blocked walking times out
+PASS · Town packet explicit option 1
+PASS · Unsupported respawn option rejected
+PASS · Unique Berserk dropdown option
+PASS · Unique rank selects Berserk
+PASS · Unique remains Unique with party flag
+PASS · Unique and Giant Berserk classes isolated
+PASS · Prior Berserk class behavior retained
+PASS · Repair <=4 preserved
+PASS · Account settings paths isolated
+PASS · Four tabs render including dual-account trial
+PASS · Solo Trial selected by default
+PASS · All checked modes expose 72 rows
+PASS · Manual dungeon checkbox stores code and mode
+PASS · Manual visited marker survives grid refresh
+PASS · Manual visited marker can be cleared
+PASS · Mystic Tiger model name resolved
+PASS · Plus prevents duplicate mob rows
+PASS · Minus removes mob row
+PASS · Normal combat reads common Av settings
+PASS · Grim combat reads the same common Av settings
+PASS · No duplicate Grim controls
+PASS · Grim holds position only after the mapped survey is complete
+PASS · Fixed function keys removed and function key assignment refused
+PASS · Custom single key and Ctrl combination supported
+PASS · Hotkey cannot intercept its own attack inputs
+PASS · Berserk Tab conflict prevented
+PASS · Common settings, death counter and custom key persist
+PASS · Publisher RSA/SHA256 signature verifies
+PASS · Signed release hash, byte size and assembly version verify
+PASS · Altered signed manifest rejected
+PASS · Insecure HTTP update URL rejected
+PASS · Updater job paths cannot escape staging root
+No game commands sent by this test harness.
