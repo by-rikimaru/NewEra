@@ -6,7 +6,7 @@ import mmap
 import struct
 from pathlib import Path
 
-root = Path('work/nav-research')
+root = Path('tools/nav-research')
 phbot = Path(os.environ.get('PHBOT_DIR', 'C:/Program Files/phBot Stable'))  # phBot klasörünün yolu; PHBOT_DIR ortam değişkeniyle ayarla
 all_regions = json.loads((root / 'regions.json').read_text(encoding='utf-8'))
 regions = {int(k): v for k, v in all_regions.items()
@@ -60,7 +60,7 @@ def traversable(region, cell):
     return region in regions and 0 <= cell < len(regions[region]['cells']) and cell not in regions[region]['blocked']
 
 edge_count = 0
-with gzip.open('outputs/v3/road-mesh.bin.gz', 'wb', compresslevel=5) as target:
+with gzip.open('data/road-mesh.bin.gz', 'wb', compresslevel=5) as target:
     target.write(struct.pack('<4sII', b'RD01', len(regions), count))
     for region, mesh in regions.items():
         links = [set() for _ in mesh['cells']]

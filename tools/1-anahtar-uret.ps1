@@ -8,7 +8,7 @@ if(Test-Path $priv){throw "Anahtar zaten var: $priv  (üzerine yazılmadı)"}
 New-Item -ItemType Directory -Force $KeyDir | Out-Null
 $rsa=New-Object Security.Cryptography.RSACryptoServiceProvider 3072
 [IO.File]::WriteAllText($priv,$rsa.ToXmlString($true))
-[IO.File]::WriteAllText((Join-Path $root 'outputs\v3\updates-public-key.xml'),$rsa.ToXmlString($false))
+[IO.File]::WriteAllText((Join-Path $root 'data\updates-public-key.xml'),$rsa.ToXmlString($false))
 Write-Output "Özel anahtar: $priv"
 Write-Output "YEDEKLE! Kaybedersen mevcut kullanıcılara güncelleme gönderemezsin."
 Write-Output "Genel anahtar projeye yazıldı. Şimdi 2-yayin-hazirla.ps1 ile ilk sürümü derle."

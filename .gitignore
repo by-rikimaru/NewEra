@@ -1,7 +1,10 @@
 ﻿# Derleme çıktıları
 *.exe
 release/
-work/road-audit.txt
+tests/road-audit.txt
+tests/old-release-sample.exe
+tools/nav-research/
+build/
 # Gizli anahtarlar ve kişisel ayarlar: ASLA commit etme
 updates-private-key.xml
 NewEraKeys/
