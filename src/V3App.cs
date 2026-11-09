@@ -61,7 +61,7 @@ sealed partial class MemorySelectV3Form:Form {
   if(mode==OperationMode.Hunt&&(V3Data.IsCrypt(snapshot.Player)||V3Data.IsCrypt(center)))throw new InvalidOperationException("Bu alan için Grim Crypt sekmesini kullan.");
   var list=new List<ushort>();foreach(string t in RunKeys.ToUpperInvariant().Split(new[]{' ',',',';'},StringSplitOptions.RemoveEmptyEntries)){if(t.Length!=1||!((t[0]>='0'&&t[0]<='9')||(t[0]>='A'&&t[0]<='Z')))throw new InvalidOperationException("Tuşlar: A-Z, 0-9; boşlukla ayır.");list.Add(t[0]);}if(mode!=OperationMode.Travel&&RunSendKeys&&list.Count==0)throw new InvalidOperationException("Saldırı tuşu seç.");if(mode==OperationMode.Grim&&!RunSendKeys)throw new InvalidOperationException("Av / Ayarlar içindeki Hedef doğrulanınca tuşlara bas seçeneğini aç.");
   if(HotkeyPolicy.Conflicts(shortcutKey,shortcutMods,list,RunZerk))throw new InvalidOperationException("Başlat/durdur kısayolu saldırı veya Berserk tuşuyla aynı. Kısayolu değiştir.");SaveSettings();routeWalker.Reset();routeTarget=0;approachWatch.Reset();movementPoint=previousMovementPoint=null;nextVisibility=0;parsedKeys=list.ToArray();sender=new TargetSender(reader);active=true;operation=mode;wanted=lastRequest=0;attempts=keyIndex=0;nextRequest=nextKey=nextMove=0;returning=false;grimHolding=grimWaiting=false;watch.Reset();zerkLatched=false;recovery.Begin();banned.Clear();foreach(var c in locked)c.Enabled=false;status.Text="Başladı. Oyuna geç.";Log("Başlatıldı: "+mode);}
- void Stop(string text){bool wasReturning=active&&snapshot!=null&&snapshot.PlayerAlive&&recovery.Phase==RecoveryPhase.Ready&&(returning||operation==OperationMode.Travel||operation==OperationMode.Grim);routeWalker.Reset();grim.Stop();recovery.Stop();active=false;ReleaseKey();if(sender!=null){
+ void Stop(string text){if(queueRunning&&!queueAdvancing){queueRunning=false;UpdateQueueUi();Log("Sıra durduruldu · "+text);}bool wasReturning=active&&snapshot!=null&&snapshot.PlayerAlive&&recovery.Phase==RecoveryPhase.Ready&&(returning||operation==OperationMode.Travel||operation==OperationMode.Grim);routeWalker.Reset();grim.Stop();recovery.Stop();active=false;ReleaseKey();if(sender!=null){
   if(wasReturning&&reader!=null&&snapshot!=null){try{if(reader.IsForeground())sender.Move(snapshot.Player.Copy());}catch{}}
   sender.Dispose();sender=null;
  }wanted=0;returning=false;watch.Reset();foreach(var c in locked)c.Enabled=true;completionNotice.Dispose();status.Text=text;Log(text);try{SaveSettings();}catch(Exception e){status.Text+=" Ayarlar kaydedilemedi: "+e.Message;}}
@@ -107,7 +107,7 @@ sealed partial class MemorySelectV3Form:Form {
   if(!foreground){ReleaseKey();watch.Pause(elapsed);approachWatch.Pause(elapsed);travel.Pause(elapsed);routeWalker.Pause(elapsed);if(returning)returnProgressAt+=elapsed;status.Text="Bekliyor: oyun önde değil.";return;}
   if(!snapshot.Player.Outside){Stop("Desteklenmeyen kapalı koordinat türüne geçildi.");return;}
   if(snapshot.Berserk>=0&&snapshot.Berserk<5)zerkLatched=false;if(ProcessMaintenance(now)){approachWatch.Pause(elapsed);routeWalker.Pause(elapsed);return;}
-  RecordExit();
+  RecordExit();if(operation==OperationMode.Grim&&QueueAfterComplete(now))return;
   if(operation==OperationMode.Travel){ExpeditionTick(now);return;}
   Monster target;
   if(operation==OperationMode.Grim){int mapBudget=snapshot.Monsters.Any(m=>m.Alive&&grim.IsRegion(m.Position))?0:48;grim.MapStep(snapshot,sender,mapBudget);target=grim.Choose(snapshot,banned,now,wanted);}

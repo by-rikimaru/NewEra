@@ -280,6 +280,12 @@ PASS · Normal combat reads common Av settings
 PASS · Grim combat reads the same common Av settings
 PASS · No duplicate Grim controls
 PASS · World map selection follows the dungeon grid without lagging one row behind
+PASS · Dungeon queue keeps the order in which dungeons were picked
+PASS · Dungeon queue moves an entry up
+PASS · Picking a queued dungeon again removes it
+PASS · Only Solo Trial dungeons can join the queue
+PASS · Queue list shows the picked dungeons in order
+PASS · Queue clears
 PASS · Grim holds position only after the mapped survey is complete
 PASS · Fixed function keys removed and function key assignment refused
 PASS · Custom single key and Ctrl combination supported

@@ -29,6 +29,8 @@ sealed class WorldMapView : Control {
     internal string Selected;
     internal Func<string, bool> Visited;
     internal event Action<string> DungeonPicked;
+    internal event Action<string> DungeonToggled;
+    internal Func<IList<string>> Queue;
     internal bool Ready { get { return baseMap != null; } }
 
     internal static PointF ToImage(double x, double y) {
@@ -119,7 +121,15 @@ sealed class WorldMapView : Control {
                 g.DrawImage(baseMap, new RectangleF(left, top, (float)(baseMap.Width * zoom), (float)(baseMap.Height * zoom)));            } else {
                 Label(g, "Harita resmi bulunamadı.", big, Brushes.White, 20, 20);
             }
-            foreach (var town in Towns) {
+            var queued = Queue == null ? null : Queue();
+            if (queued != null && queued.Count > 1) {
+                var route = new List<PointF>();
+                foreach (string code in queued) {
+                    var stop = sites.FirstOrDefault(s => s.Code == code);
+                    if (stop != null) route.Add(S(stop.X, stop.Y));
+                }
+                if (route.Count > 1) using (var dash = new Pen(Color.FromArgb(230, 255, 215, 0), 2.5f) { DashStyle = DashStyle.Dash }) g.DrawLines(dash, route.ToArray());
+            }            foreach (var town in Towns) {
                 var gate = ExpeditionRules.Network.Gates.FirstOrDefault(x => x.Id == town.Key);
                 if (gate == null) continue;
                 var p = S(gate.X, gate.Y);
@@ -137,13 +147,25 @@ sealed class WorldMapView : Control {
                 Label(g, d.Code, selected ? big : small, selected ? Brushes.Gold : Brushes.White, p.X + 10, p.Y - (selected ? 22 : 18));
                 if (selected || zoom > 0.55) Label(g, d.Name, small, Brushes.White, p.X + 10, p.Y + 4);
             }
-            if (Player != null && Player.Outside) {
+            if (queued != null) {
+                using (var center = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center }) {
+                    for (int i = 0; i < queued.Count; i++) {
+                        var stop = sites.FirstOrDefault(s => s.Code == queued[i]);
+                        if (stop == null) continue;
+                        var p = S(stop.X, stop.Y);
+                        var badge = new RectangleF(p.X - 24, p.Y - 24, 17, 17);
+                        g.FillEllipse(Brushes.RoyalBlue, badge);
+                        g.DrawEllipse(Pens.White, badge.X, badge.Y, badge.Width, badge.Height);
+                        g.DrawString((i + 1).ToString(), small, Brushes.White, badge, center);
+                    }
+                }
+            }            if (Player != null && Player.Outside) {
                 var p = S(Player.X, Player.Y);
                 g.FillEllipse(Brushes.Cyan, p.X - 6, p.Y - 6, 12, 12);
                 g.DrawEllipse(Pens.Black, p.X - 6, p.Y - 6, 12, 12);
                 Label(g, "Sen", small, Brushes.Cyan, p.X + 8, p.Y - 8);
             }
-            const string legend = "Kırmızı: giriş · Yeşil: girildi · Altın halka: seçili · Mavi: şehir · Turkuaz: karakter\nFare tekerleği: yakınlaştır · Sürükle: kaydır · Çift tık: sığdır · Noktaya tıkla: dungeon seç";
+            const string legend = "Kırmızı: giriş · Yeşil: girildi · Altın halka: seçili · Mavi: şehir · Turkuaz: karakter\nFare tekerleği: yakınlaştır · Sürükle: kaydır · Çift tık: sığdır · Noktaya tıkla: dungeon seç · Shift+tık: sıraya ekle/çıkar";
             var legendSize = g.MeasureString(legend, small);
             float legendTop = Height - legendSize.Height - 14;
             using (var back = new SolidBrush(Color.FromArgb(170, 0, 0, 0)))
@@ -189,7 +211,9 @@ sealed class WorldMapView : Control {
         dragging = false;
         if (!click) { Invalidate(); return; }
         var hit = HitTest(e.Location);
-        if (hit != null && DungeonPicked != null) DungeonPicked(hit.Code);
+        if (hit == null) return;
+        if ((ModifierKeys & Keys.Shift) != 0) { if (DungeonToggled != null) DungeonToggled(hit.Code); }
+        else if (DungeonPicked != null) DungeonPicked(hit.Code);
     }
 
     protected override void OnMouseDoubleClick(MouseEventArgs e) {
@@ -218,6 +242,11 @@ sealed partial class MemorySelectV3Form {
         worldMap.Sites = V3Data.Dungeons;
         worldMap.Visited = code => visitedDungeons.Any(id => id.StartsWith(code + "|", StringComparison.Ordinal));
         worldMap.DungeonPicked += PickDungeonFromMap;
+        worldMap.Queue = delegate { return QueueOrder(); };
+        worldMap.DungeonToggled += delegate(string code) {
+            var trial = V3Data.Dungeons.FirstOrDefault(x => x.Code == code && x.Mode == "Solo Trial");
+            if (trial != null) Safe(delegate { ToggleQueue(trial); });
+        };
         grimViews.SelectedIndexChanged += delegate { if (grimViews.SelectedTab == worldTab) SyncWorldMap(); };
     }
 
