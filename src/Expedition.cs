@@ -24,6 +24,7 @@ static class ExpeditionRules {
  internal static bool Infrastructure(TransitGate g){return g.World==1&&g.Model>0&&(g.Id==1||g.Id==2||g.Id==5||g.Id==20||g.Id==25||g.Id==252||g.Id==330||g.Code.Contains("FERRY")||g.Code.Contains("FLYSHIP")||g.Code.Contains("TUNNEL"));}
  static readonly Lazy<RoadMesh> roads=new Lazy<RoadMesh>(()=>new RoadMesh(Network));
  internal static List<TransitStep> Plan(Position start,Position goal,HashSet<int> excluded=null){return roads.Value.Plan(start,goal,excluded);}
+ internal static System.Drawing.Bitmap RenderWorld(double minX,double maxY,int width,int height,double scale){return roads.Value.RenderWorld(minX,maxY,width,height,scale);}
 
 }
 sealed partial class MemorySelectV3Form {

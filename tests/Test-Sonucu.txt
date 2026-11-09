@@ -114,6 +114,25 @@ PASS · D15 entrance has a road route from its city
 PASS · D16 entrance has a road route from its city
 PASS · D17 entrance has a road route from its city
 PASS · D18 entrance has a road route from its city
+PASS · World map renders walkable land from road data
+PASS · D01 entrance lies on the world map land
+PASS · D02 entrance lies on the world map land
+PASS · D03 entrance lies on the world map land
+PASS · D04 entrance lies on the world map land
+PASS · D05 entrance lies on the world map land
+PASS · D06 entrance lies on the world map land
+PASS · D07 entrance lies on the world map land
+PASS · D08 entrance lies on the world map land
+PASS · D09 entrance lies on the world map land
+PASS · D10 entrance lies on the world map land
+PASS · D11 entrance lies on the world map land
+PASS · D12 entrance lies on the world map land
+PASS · D13 entrance lies on the world map land
+PASS · D14 entrance lies on the world map land
+PASS · D15 entrance lies on the world map land
+PASS · D16 entrance lies on the world map land
+PASS · D17 entrance lies on the world map land
+PASS · D18 entrance lies on the world map land
 PASS · Jangan screenshot start reaches a D17 local approach without teleport
 PASS · Normal movement keeps the route; a position jump requests a new route
 PASS · Walking shortcut requires clear ground and preserves ferry steps
