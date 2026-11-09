@@ -62,6 +62,11 @@ Güncellemeler RSA imzasıyla doğrulanır. Doğrulama genel anahtarı `data\upd
 - `data\road-mesh.bin.gz` dosyasının üretim kaynağı `tools\export-road-mesh.py` betiğidir. Yeniden üretmek için yerel oyun arşivi ve çözümlenmiş bölgeler gerekir. Hazır dosya normal derleme için yeterlidir.
 - Depo kişisel hesap ayarlarını ve güncelleme imzalama özel anahtarını içermez.
 
+## Dungeon sırası
+
+Grim Crypt sekmesindeki "Çalıştırma sırası" paneli, seçtiğin Solo Trial dungeonları seçtiğin sırayla otomatik çalıştırır. Dungeon'u tabloda çift tıkla, **Ekle / Çıkar** düğmesiyle ya da haritada **Shift+tık** ile sıraya al; ▲ ▼ ile sırayı değiştir. Sıra haritada numara ve kesik çizgiyle görünür.
+
+**Sırayı başlat:** bot girişe yürür, girer, dungeon'u bitirir, **Dungeon Exit NPC'si** ile çıkar (oyun verisindeki ışınlanma kaydı: Donwhang, 5000 altın) ve sıradakine geçer. Bitirilen dungeon "Girdim" olarak işaretlenir. Sıra bitince "Sıra bitince Return Scroll ile şehre dön" açıksa bir Return Scroll kullanır. Çıkış otomatik yapılamazsa bot loga yazar ve Dungeon Exit'e elle tıklamanı bekler.
 ## Harita
 
 Grim Crypt sekmesindeki **Dünya haritası**, oyunun kendi minimap karolarından birleştirilir (kaynak: [JellyBitz/xSROMap](https://github.com/JellyBitz/xSROMap), MIT). Koordinat eşlemesi kesindir: harita pikseli = oyun koordinatı / 4 + ofset. Yeniden üretmek için `tools\build-world-map.ps1`. Nanzhang bölgesinin karosu bu veri setinde yoktur.

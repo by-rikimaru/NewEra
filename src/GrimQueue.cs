@@ -5,15 +5,20 @@ using System.Linq;
 using System.Windows.Forms;
 
 // Dungeon queue: the player picks Solo Trial dungeons in the order they should run, and the bot walks to
-// each entrance, enters, clears it and moves on to the next one once the character is back outside.
-// Leaving a finished dungeon is not automated by the game command layer (there is no exit link in the transit
-// data), so the player clicks the Dungeon Exit NPC, or optionally the bot uses a Return Scroll.
+// each entrance, enters, clears it, leaves through the Dungeon Exit NPC and goes on with the next one.
+// The exit NPC (model 36031) is a teleporter with two destinations in the game data (link 254 -> 2 Donwhang and
+// 254 -> 252 Nanzhang, 5000 gold). After the last dungeon the bot can read a Return Scroll to go back to town.
 sealed partial class MemorySelectV3Form {
     readonly List<DungeonLocation> queue = new List<DungeonLocation>();
     readonly ListBox queueList = new ListBox();
     readonly CheckBox queueReturnScroll = new CheckBox();
     readonly Label queueInfo = new Label();
-    bool queueRunning, queueAdvancing, queueReturnUsed;
+    // Dungeon Exit NPC teleporter: gate 254, destination 2 (Donwhang). Nanzhang (252) is the other destination.
+    const int ExitNpcGate = 254, ExitDestinationGate = 2;
+    bool queueRunning, queueAdvancing;
+    int queueExitPhase;
+    long queueExitSince;
+    uint queueExitUid;
     int queueIndex;
 
     internal List<string> QueueOrder() { return queue.Select(d => d.Code).ToList(); }
@@ -36,7 +41,7 @@ sealed partial class MemorySelectV3Form {
         side.Controls.Add(arrows);
         side.Controls.Add(Btn("Temizle", ClearQueue, 170));
         side.Controls.Add(Btn("Sırayı başlat", StartQueue, 170));
-        queueReturnScroll.Text = "Bitince Return Scroll ile çık (denenmedi)";
+        queueReturnScroll.Text = "Sıra bitince Return Scroll ile şehre dön";
         queueReturnScroll.AutoSize = false;
         queueReturnScroll.Width = 176;
         queueReturnScroll.Height = 46;
@@ -143,7 +148,9 @@ sealed partial class MemorySelectV3Form {
 
     void BeginQueueEntry() {
         var d = queue[queueIndex];
-        queueReturnUsed = false;
+        queueExitPhase = 0;
+        queueExitSince = 0;
+        queueExitUid = 0;
         SelectDungeonRow(d);
         queueAdvancing = true;
         try { WalkDungeon(d); }
@@ -161,6 +168,14 @@ sealed partial class MemorySelectV3Form {
         SaveSettings();
     }
 
+    bool QueueUseReturnScroll() {
+        var item = snapshot.Items.Where(i => ExpeditionRules.ReturnIds.Contains(i.Model) && i.Quantity > 0 && i.Type != 0 && i.Slot >= 13).OrderBy(i => i.Slot).FirstOrDefault();
+        if (item == null || !reader.ValidateItem(item)) { Log("Sıra: kullanılabilir Return Scroll yok."); return false; }
+        if (!sender.UseReturn(item)) { Log("Sıra: Return Scroll isteği reddedildi."); return false; }
+        Log("Sıra: Return Scroll ile şehre dönüş istendi · ID " + item.Model);
+        return true;
+    }
+
     // Called every tick while the bot is inside a Grim run. Returns true when the queue handled this tick.
     bool QueueAfterComplete(long now) {
         if (!queueRunning || queueAdvancing || queueIndex >= queue.Count) return false;
@@ -174,6 +189,7 @@ sealed partial class MemorySelectV3Form {
             if (queueIndex >= queue.Count) {
                 queueRunning = false;
                 UpdateQueueUi();
+                if (queueReturnScroll.Checked) QueueUseReturnScroll();
                 Stop("Sıra tamamlandı: " + queue.Count + " dungeon.");
                 return true;
             }
@@ -182,15 +198,44 @@ sealed partial class MemorySelectV3Form {
             return true;
         }
         if (!exitHolding) return false;
-        if (queueReturnScroll.Checked && !queueReturnUsed) {
-            queueReturnUsed = true;
-            var item = snapshot.Items.Where(i => ExpeditionRules.ReturnIds.Contains(i.Model) && i.Quantity > 0 && i.Type != 0 && i.Slot >= 13).OrderBy(i => i.Slot).FirstOrDefault();
-            if (item == null || !reader.ValidateItem(item)) { Log("Sıra: kullanılabilir Return Scroll yok; Dungeon Exit'e elle tıkla."); return true; }
-            if (!sender.UseReturn(item)) { Log("Sıra: Return Scroll isteği reddedildi; Dungeon Exit'e elle tıkla."); return true; }
-            Log("Sıra: Return Scroll ile çıkış istendi · ID " + item.Model);
+        return QueueExit(now);
+    }
+
+    // The character stands at the Dungeon Exit NPC after a finished dungeon: select it and take its teleport.
+    bool QueueExit(long now) {
+        string waiting = "Sıra " + (queueIndex + 1) + "/" + queue.Count + " bitti · ";
+        if (queueExitPhase == 3) { status.Text = waiting + "çıkış otomatik yapılamadı; Dungeon Exit'e elle tıkla, çıkınca sıradaki otomatik başlar."; return true; }
+        if (queueExitSince == 0) queueExitSince = now;
+        if (queueExitPhase == 0) {
+            var npc = snapshot.Npcs.Where(n => n.Model == 36031 || n.Model == 36032).OrderBy(n => n.Position.Distance(snapshot.Player)).FirstOrDefault();
+            if (npc == null || npc.Position.Distance(snapshot.Player) > 30 || !reader.ValidateNpc(npc)) {
+                status.Text = waiting + "Dungeon Exit NPC'si okunuyor.";
+                if (now - queueExitSince > 10000) { Log("Sıra: Dungeon Exit NPC'si okunamadı; elle çıkış bekleniyor."); queueExitPhase = 3; }
+                return true;
+            }
+            if (!sender.Send(npc.Uid)) { Log("Sıra: Dungeon Exit seçimi reddedildi; elle çıkış bekleniyor."); queueExitPhase = 3; return true; }
+            queueExitUid = npc.Uid;
+            queueExitSince = now;
+            queueExitPhase = 1;
+            status.Text = waiting + "Dungeon Exit seçildi.";
             return true;
         }
-        status.Text = "Sıra " + (queueIndex + 1) + "/" + queue.Count + " bitti · Dungeon Exit'e tıkla; çıkınca sıradaki dungeon otomatik başlar.";
+        if (queueExitPhase == 1) {
+            if (snapshot.Selected != queueExitUid) {
+                if (now - queueExitSince > 5000) { Log("Sıra: Dungeon Exit seçimi doğrulanamadı; elle çıkış bekleniyor."); queueExitPhase = 3; }
+                return true;
+            }
+            if (now - queueExitSince < 600) return true;
+            if (!sender.Teleport(queueExitUid, ExitNpcGate, ExitDestinationGate)) { Log("Sıra: Dungeon Exit ışınlanması reddedildi; elle çıkış bekleniyor."); queueExitPhase = 3; return true; }
+            Log("Sıra: Dungeon Exit ile çıkış istendi · UID " + queueExitUid);
+            queueExitSince = now;
+            queueExitPhase = 2;
+            status.Text = waiting + "çıkış yapılıyor.";
+            return true;
+        }
+        // phase 2: the teleport was sent; leaving the dungeon moves the character out of its region on its own.
+        status.Text = waiting + "çıkış bekleniyor.";
+        if (now - queueExitSince > 25000) { Log("Sıra: Dungeon'dan çıkış doğrulanamadı; elle çıkış bekleniyor."); queueExitPhase = 3; }
         return true;
     }
 }

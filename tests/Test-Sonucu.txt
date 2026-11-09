@@ -286,6 +286,8 @@ PASS · Picking a queued dungeon again removes it
 PASS · Only Solo Trial dungeons can join the queue
 PASS · Queue list shows the picked dungeons in order
 PASS · Queue clears
+PASS · Dungeon Exit NPC teleporter has the Donwhang and Nanzhang destinations in the transit data
+PASS · Dungeon Exit teleporter gate uses the exit NPC model the bot already tracks
 PASS · Grim holds position only after the mapped survey is complete
 PASS · Fixed function keys removed and function key assignment refused
 PASS · Custom single key and Ctrl combination supported
