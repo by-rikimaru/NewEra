@@ -9,10 +9,11 @@ using System.Windows.Forms;
 
 // World map: the Explorer artwork with the dungeon entrances placed at their world coordinates.
 sealed class WorldMapView : Control {
-    // The artwork is a uniform scaling of the game world: pixel = Origin + world * PxPerUnit (Y axis flipped).
-    // Fitted on Hotan and Jangan, then checked against the road data (town plateaus, ruins and cliffs line up).
-    internal const double PxPerUnit = 0.184, OriginX = 2248.06, OriginY = 662.82;
-    internal const string ResourceName = "explorer-52.jpg";
+    // The artwork is an affine transform of the game world (scale, slight rotation, flipped Y).
+    // Fitted by least squares on six independent landmarks (Samarkand, Hotan and Jangan city icons, and the
+    // D05, D07, D17 positions read from the in-game world map); all six land within about 10 pixels.
+    internal const double AX = 0.17999, AY = 0.02399, AC = 2240.0, BX = -0.00750, BY = -0.15998, BC = 685.9;
+    internal const string ResourceName = "world-map.jpg";
     static readonly KeyValuePair<int, string>[] Towns = {
         new KeyValuePair<int, string>(20, "Constantinople"), new KeyValuePair<int, string>(25, "Samarkand"),
         new KeyValuePair<int, string>(5, "Hotan"), new KeyValuePair<int, string>(2, "Donwhang"),
@@ -21,7 +22,8 @@ sealed class WorldMapView : Control {
 
     Bitmap baseMap;
     bool userMoved, dragging, moved;
-    double zoom = 0.07, cx = -2400, cy = 0, dragCx, dragCy;
+    // View state in artwork pixels: zoom = screen pixels per artwork pixel, (cx, cy) = artwork pixel at the view centre.
+    double zoom = 0.4, cx = 1833, cy = 667, dragCx, dragCy;
     Point dragStart;
     List<DungeonLocation> sites = new List<DungeonLocation>();
 
@@ -32,7 +34,7 @@ sealed class WorldMapView : Control {
     internal bool Ready { get { return baseMap != null; } }
 
     internal static PointF ToImage(double x, double y) {
-        return new PointF((float)(OriginX + x * PxPerUnit), (float)(OriginY - y * PxPerUnit));
+        return new PointF((float)(AX * x + AY * y + AC), (float)(BX * x + BY * y + BC));
     }
 
     internal IEnumerable<DungeonLocation> Sites {
@@ -53,33 +55,34 @@ sealed class WorldMapView : Control {
             if (stream == null) return;
             using (var image = Image.FromStream(stream)) baseMap = new Bitmap(image);
         }
+        if (!userMoved) Fit();
         Invalidate();
     }
 
     void Fit() {
         if (Width < 50 || Height < 50) return;
-        // Artwork plus a margin: about X -12700..7900 and Y -3700..3700.
-        zoom = Math.Min((Width - 30) / 20600.0, (Height - 30) / 7400.0);
-        cx = -2400;
-        cy = 0;
+        double w = baseMap != null ? baseMap.Width : 3667, h = baseMap != null ? baseMap.Height : 1334;
+        zoom = Math.Min((Width - 20) / w, (Height - 20) / h);
+        cx = w / 2;
+        cy = h / 2;
     }
-
     protected override void OnResize(EventArgs e) {
         base.OnResize(e);
         if (!userMoved) Fit();
     }
 
     PointF S(double x, double y) {
-        return new PointF((float)((x - cx) * zoom + Width / 2.0), (float)((cy - y) * zoom + Height / 2.0));
+        var p = ToImage(x, y);
+        return new PointF((float)((p.X - cx) * zoom + Width / 2.0), (float)((p.Y - cy) * zoom + Height / 2.0));
     }
 
     internal void CenterOn(DungeonLocation d) {
-        cx = d.X;
-        cy = d.Y;
+        var p = ToImage(d.X, d.Y);
+        cx = p.X;
+        cy = p.Y;
         userMoved = true;
         Invalidate();
     }
-
     // Scrolls to the entrance only when it is not already comfortably on screen.
     internal void Reveal(DungeonLocation d) {
         var p = S(d.X, d.Y);
@@ -112,14 +115,10 @@ sealed class WorldMapView : Control {
         using (var small = new Font("Segoe UI", 9f, FontStyle.Bold))
         using (var big = new Font("Segoe UI", 10.5f, FontStyle.Bold)) {
             if (baseMap != null) {
-                double x0 = (0 - OriginX) / PxPerUnit, x1 = (baseMap.Width - OriginX) / PxPerUnit;
-                double y0 = (OriginY - 0) / PxPerUnit, y1 = (OriginY - baseMap.Height) / PxPerUnit;
-                var a = S(x0, y0);
-                var b = S(x1, y1);
                 g.InterpolationMode = dragging ? InterpolationMode.Bilinear : InterpolationMode.HighQualityBilinear;
                 g.PixelOffsetMode = PixelOffsetMode.Half;
-                g.DrawImage(baseMap, new RectangleF(a.X, a.Y, b.X - a.X, b.Y - a.Y));
-            } else {
+                float left = (float)((0 - cx) * zoom + Width / 2.0), top = (float)((0 - cy) * zoom + Height / 2.0);
+                g.DrawImage(baseMap, new RectangleF(left, top, (float)(baseMap.Width * zoom), (float)(baseMap.Height * zoom)));            } else {
                 Label(g, "Harita resmi bulunamadı.", big, Brushes.White, 20, 60);
             }
             foreach (var town in Towns) {
@@ -138,7 +137,7 @@ sealed class WorldMapView : Control {
                 g.FillEllipse(visited ? Brushes.SeaGreen : Brushes.OrangeRed, p.X - 7, p.Y - 7, 14, 14);
                 g.DrawEllipse(Pens.White, p.X - 7, p.Y - 7, 14, 14);
                 Label(g, d.Code, selected ? big : small, selected ? Brushes.Gold : Brushes.White, p.X + 10, p.Y - (selected ? 22 : 18));
-                if (selected || zoom > 0.12) Label(g, d.Name, small, Brushes.White, p.X + 10, p.Y + 4);
+                if (selected || zoom > 0.8) Label(g, d.Name, small, Brushes.White, p.X + 10, p.Y + 4);
             }
             if (Player != null && Player.Outside) {
                 var p = S(Player.X, Player.Y);
@@ -153,14 +152,13 @@ sealed class WorldMapView : Control {
     }
 
     protected override void OnMouseWheel(MouseEventArgs e) {
-        double wx = cx + (e.X - Width / 2.0) / zoom, wy = cy - (e.Y - Height / 2.0) / zoom;
-        zoom = Math.Max(0.015, Math.Min(1.5, zoom * (e.Delta > 0 ? 1.25 : 0.8)));
+        double wx = cx + (e.X - Width / 2.0) / zoom, wy = cy + (e.Y - Height / 2.0) / zoom;
+        zoom = Math.Max(0.1, Math.Min(4.0, zoom * (e.Delta > 0 ? 1.25 : 0.8)));
         cx = wx - (e.X - Width / 2.0) / zoom;
-        cy = wy + (e.Y - Height / 2.0) / zoom;
+        cy = wy - (e.Y - Height / 2.0) / zoom;
         userMoved = true;
         Invalidate();
     }
-
     protected override void OnMouseDown(MouseEventArgs e) {
         base.OnMouseDown(e);
         if (e.Button != MouseButtons.Left) return;
@@ -179,7 +177,7 @@ sealed class WorldMapView : Control {
         if (Math.Abs(dx) > 3 || Math.Abs(dy) > 3) moved = true;
         if (!moved) return;
         cx = dragCx - dx / zoom;
-        cy = dragCy + dy / zoom;
+        cy = dragCy - dy / zoom;
         userMoved = true;
         Invalidate();
     }

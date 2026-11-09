@@ -2,7 +2,7 @@
 Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
 New-Item -ItemType Directory -Force build | Out-Null
 $compiler=(Join-Path $env:WINDIR "Microsoft.NET/Framework/v4.0.30319/csc.exe")
-$buildArgs=@('/nologo','/target:exe','/platform:x86','/optimize+','/utf8output','/out:build/V3Checks.exe','/main:V3Checks','/reference:System.Windows.Forms.dll','/reference:System.Drawing.dll','/reference:System.Core.dll','/reference:System.Web.Extensions.dll','/win32icon:assets/Rikimaru.ico','/resource:assets/Rikimaru.ico,Silkroad.ico','/resource:data/monster-names.tsv,monster-names.tsv','/resource:assets/Explorer-Harita-Sade.jpg,explorer-52.jpg','/resource:data/grim-locations.json,grim-locations.json','/resource:data/town-regions.json,town-regions.json','/resource:data/updates-public-key.xml,updates-public-key.xml')
+$buildArgs=@('/nologo','/target:exe','/platform:x86','/optimize+','/utf8output','/out:build/V3Checks.exe','/main:V3Checks','/reference:System.Windows.Forms.dll','/reference:System.Drawing.dll','/reference:System.Core.dll','/reference:System.Web.Extensions.dll','/win32icon:assets/Rikimaru.ico','/resource:assets/Rikimaru.ico,Silkroad.ico','/resource:data/monster-names.tsv,monster-names.tsv','/resource:assets/Explorer-Harita-Sade.jpg,explorer-52.jpg','/resource:assets/Dunya-Haritasi.jpg,world-map.jpg','/resource:data/grim-locations.json,grim-locations.json','/resource:data/town-regions.json,town-regions.json','/resource:data/updates-public-key.xml,updates-public-key.xml')
 1..18 | ForEach-Object {
  $trialCode='D{0:D2}' -f $_
  $trialFile='data/Grim-Haritalari/'+$trialCode+'-Solo-Trial/'+$trialCode+'-Solo-Trial.json'

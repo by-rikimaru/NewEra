@@ -114,7 +114,7 @@ PASS · D15 entrance has a road route from its city
 PASS · D16 entrance has a road route from its city
 PASS · D17 entrance has a road route from its city
 PASS · D18 entrance has a road route from its city
-PASS · World map pixel mapping matches the Hotan and Jangan anchors
+PASS · World map pixel mapping matches the six landmark references within 15 pixels
 PASS · D01 entrance maps onto the world map artwork
 PASS · D02 entrance maps onto the world map artwork
 PASS · D03 entrance maps onto the world map artwork
