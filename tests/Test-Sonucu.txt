@@ -293,7 +293,8 @@ PASS · Exp gain and per-minute rate are measured from the session
 PASS · SP gain counts the 400-point sub steps
 PASS · An exp loss after a death is never a negative gain
 PASS · Gains continue from the lower exp after a death
-PASS · A level up counts the rest of the old level plus the new exp
+PASS · A level up counts the rest of the old level plus the new exp and the level gained
+PASS · Reset clears the session counters
 PASS · Durations are written in hours, minutes and seconds
 PASS · Grim holds position only after the mapped survey is complete
 PASS · Fixed function keys removed and function key assignment refused

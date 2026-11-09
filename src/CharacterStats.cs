@@ -28,6 +28,7 @@ sealed class CharacterStats {
     internal long StartMs { get; private set; }
     internal long ExpGained { get; private set; }
     internal long Sp400Gained { get; private set; }
+    internal int LevelsGained { get; private set; }
     internal double SpGained { get { return Sp400Gained / 400.0; } }
 
     internal void Reset() {
@@ -35,6 +36,7 @@ sealed class CharacterStats {
         started = false;
         ExpGained = 0;
         Sp400Gained = 0;
+        LevelsGained = 0;
     }
 
     internal bool Started { get { return started; } }
@@ -57,6 +59,7 @@ sealed class CharacterStats {
         } else if (s.Level == lastLevel + 1) {
             long left = LevelData.Required(lastLevel) - lastExp;
             ExpGained += (left > 0 ? left : 0) + exp;           // level up: the rest of the old level plus the new exp
+            LevelsGained++;
         }
         lastLevel = s.Level;
         lastExp = exp;
@@ -156,10 +159,18 @@ sealed class StatPanel : Control {
                 g.DrawString("Karakter verisi yok · oyun penceresini seçip Bağlan / Oku'ya bas.", normal, text, 4, 8);
                 return;
             }
-            string header = "Seviye " + s.Level;
-            if (Stats != null && Stats.Started) header += "   ·   Oturum süresi " + Duration((Now - Stats.StartMs) / 60000.0);
-            g.DrawString(header, bold, text, 4, 2);
-            int y = 28;
+            using (var big = new Font("Segoe UI", 16f, FontStyle.Bold))
+            using (var gold = new SolidBrush(Color.FromArgb(255, 205, 80))) {
+                string level = "Seviye " + s.Level;
+                g.DrawString(level, big, gold, 4, 0);
+                float x = 4 + g.MeasureString(level, big).Width + 8;
+                string more = "";
+                if (Stats != null && Stats.Started) {
+                    more = "Oturum süresi " + Duration((Now - Stats.StartMs) / 60000.0);
+                    if (Stats.LevelsGained > 0) more += "   ·   +" + Stats.LevelsGained + " seviye atlandı";
+                }
+                if (more.Length > 0) g.DrawString(more, bold, text, x, 8);
+            }            int y = 36;
             Bar(g, bold, y, "HP", s.MaxHp == 0 ? 0 : (double)s.Hp / s.MaxHp, HpColor, s.Hp.ToString("N0") + " / " + s.MaxHp.ToString("N0") + "  ·  %" + (s.MaxHp == 0 ? 0 : 100.0 * s.Hp / s.MaxHp).ToString("0.0"));
             y += 30;
             Bar(g, bold, y, "MP", s.MaxMp == 0 ? 0 : (double)s.Mp / s.MaxMp, MpColor, s.Mp.ToString("N0") + " / " + s.MaxMp.ToString("N0") + "  ·  %" + (s.MaxMp == 0 ? 0 : 100.0 * s.Mp / s.MaxMp).ToString("0.0"));
@@ -170,7 +181,7 @@ sealed class StatPanel : Control {
             y += 30;
             Bar(g, bold, y, "SP", s.SpExp / 400.0, SpColor, s.Sp.ToString("N0") + " SP  ·  sonraki SP'ye %" + (100.0 * s.SpExp / 400.0).ToString("0.0"));
             y += 36;
-            int[] columns = { 4, 60, 250, 470, 690 };
+            int[] columns = { 4, 60, 240, 430, 700 };
             string[] titles = { "", "Oturum", "Dakikada", "Saatte", "Kalan" };
             for (int i = 1; i < titles.Length; i++) g.DrawString(titles[i], bold, text, columns[i], y);
             y += 22;
@@ -181,7 +192,7 @@ sealed class StatPanel : Control {
                 g.DrawString("EXP", bold, expBrush, columns[0], y);
                 g.DrawString(Signed(Stats.ExpGained), normal, expBrush, columns[1], y);
                 g.DrawString(Signed(expMin) + " /dk", normal, expBrush, columns[2], y);
-                g.DrawString(Signed(expMin * 60) + " /sa", normal, expBrush, columns[3], y);
+                g.DrawString(Signed(expMin * 60) + " /sa" + (need > 0 ? " (%" + (100.0 * expMin * 60 / need).ToString("0.0") + ")" : ""), normal, expBrush, columns[3], y);
                 g.DrawString("Seviyeye " + Duration(Stats.MinutesToLevel(Now, s)), normal, expBrush, columns[4], y);
                 y += 22;
                 g.DrawString("SP", bold, spBrush, columns[0], y);
@@ -201,7 +212,7 @@ sealed partial class MemorySelectV3Form {
     void BuildStatCard() {
         var card = Card("Karakter durumu");
         statPanel.Stats = characterStats;
-        statPanel.Size = new Size(1030, 232);
+        statPanel.Size = new Size(1030, 240);
         Line(card).Controls.Add(statPanel);
         Line(card).Controls.Add(Btn("Sayaçları sıfırla", delegate { characterStats.Reset(); statPanel.Invalidate(); }, 180, false));
     }
