@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -151,29 +148,6 @@ sealed class RoadMesh {
         return true;
     }
 
-    // Draws every walkable cell as a land pixel so entrances can be shown on a map that is exact in world coordinates.
-    internal Bitmap RenderWorld(double minX, double maxY, int width, int height, double scale) {
-        var pixels = new int[width * height];
-        int land = Color.FromArgb(255, 95, 135, 175).ToArgb();
-        for (int i = 0; i < cells.Length; i++) {
-            var cell = cells[i];
-            if ((cell.Flags & 1) != 0) continue;
-            int x0 = (int)Math.Floor((cell.Left - minX) * scale), x1 = (int)Math.Ceiling((cell.Right - minX) * scale);
-            int y0 = (int)Math.Floor((maxY - cell.Top) * scale), y1 = (int)Math.Ceiling((maxY - cell.Bottom) * scale);
-            if (x1 <= x0) x1 = x0 + 1;
-            if (y1 <= y0) y1 = y0 + 1;
-            if (x1 <= 0 || y1 <= 0 || x0 >= width || y0 >= height) continue;
-            if (x0 < 0) x0 = 0;
-            if (y0 < 0) y0 = 0;
-            if (x1 > width) x1 = width;
-            if (y1 > height) y1 = height;
-            for (int y = y0; y < y1; y++) for (int x = x0; x < x1; x++) pixels[y * width + x] = land;
-        }
-        var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-        var data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-        try { Marshal.Copy(pixels, 0, data.Scan0, pixels.Length); } finally { bitmap.UnlockBits(data); }
-        return bitmap;
-    }
     internal List<TransitStep> Plan(Position start, Position goal, HashSet<int> excluded = null) {
         int origin = Locate(start, null, 12), destination = Locate(goal, excluded, 12);
         if (origin < 0 || destination < 0) throw new InvalidOperationException("Başlangıç veya portal yakınında yürünebilir harita hücresi bulunamadı.");

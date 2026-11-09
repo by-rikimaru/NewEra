@@ -114,25 +114,25 @@ PASS · D15 entrance has a road route from its city
 PASS · D16 entrance has a road route from its city
 PASS · D17 entrance has a road route from its city
 PASS · D18 entrance has a road route from its city
-PASS · World map renders walkable land from road data
-PASS · D01 entrance lies on the world map land
-PASS · D02 entrance lies on the world map land
-PASS · D03 entrance lies on the world map land
-PASS · D04 entrance lies on the world map land
-PASS · D05 entrance lies on the world map land
-PASS · D06 entrance lies on the world map land
-PASS · D07 entrance lies on the world map land
-PASS · D08 entrance lies on the world map land
-PASS · D09 entrance lies on the world map land
-PASS · D10 entrance lies on the world map land
-PASS · D11 entrance lies on the world map land
-PASS · D12 entrance lies on the world map land
-PASS · D13 entrance lies on the world map land
-PASS · D14 entrance lies on the world map land
-PASS · D15 entrance lies on the world map land
-PASS · D16 entrance lies on the world map land
-PASS · D17 entrance lies on the world map land
-PASS · D18 entrance lies on the world map land
+PASS · World map pixel mapping matches the Hotan and Jangan anchors
+PASS · D01 entrance maps onto the world map artwork
+PASS · D02 entrance maps onto the world map artwork
+PASS · D03 entrance maps onto the world map artwork
+PASS · D04 entrance maps onto the world map artwork
+PASS · D05 entrance maps onto the world map artwork
+PASS · D06 entrance maps onto the world map artwork
+PASS · D07 entrance maps onto the world map artwork
+PASS · D08 entrance maps onto the world map artwork
+PASS · D09 entrance maps onto the world map artwork
+PASS · D10 entrance maps onto the world map artwork
+PASS · D11 entrance maps onto the world map artwork
+PASS · D12 entrance maps onto the world map artwork
+PASS · D13 entrance maps onto the world map artwork
+PASS · D14 entrance maps onto the world map artwork
+PASS · D15 entrance maps onto the world map artwork
+PASS · D16 entrance maps onto the world map artwork
+PASS · D17 entrance maps onto the world map artwork
+PASS · D18 entrance maps onto the world map artwork
 PASS · Jangan screenshot start reaches a D17 local approach without teleport
 PASS · Normal movement keeps the route; a position jump requests a new route
 PASS · Walking shortcut requires clear ground and preserves ferry steps
@@ -279,6 +279,7 @@ PASS · Minus removes mob row
 PASS · Normal combat reads common Av settings
 PASS · Grim combat reads the same common Av settings
 PASS · No duplicate Grim controls
+PASS · World map selection follows the dungeon grid without lagging one row behind
 PASS · Grim holds position only after the mapped survey is complete
 PASS · Fixed function keys removed and function key assignment refused
 PASS · Custom single key and Ctrl combination supported
