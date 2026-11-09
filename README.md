@@ -1,4 +1,4 @@
-# New Era Memory Select
+﻿# New Era Memory Select
 
 New Era için C# / .NET Framework ile yazılmış bot. SQL veritabanı kullanmaz: ayarlar ve harita tabloları JSON, navigasyon ağı sıkıştırılmış ikili veridir.
 
@@ -61,6 +61,10 @@ Güncellemeler RSA imzasıyla doğrulanır. Doğrulama genel anahtarı `data\upd
 - D11 ve D12 girişleri yol ağından kopuk küçük alanlardadır. Rota bu kısa boşluğu canlı yürüyüşle geçer; bu geçişin canlı testi yapılmadı.
 - `data\road-mesh.bin.gz` dosyasının üretim kaynağı `tools\export-road-mesh.py` betiğidir. Yeniden üretmek için yerel oyun arşivi ve çözümlenmiş bölgeler gerekir. Hazır dosya normal derleme için yeterlidir.
 - Depo kişisel hesap ayarlarını ve güncelleme imzalama özel anahtarını içermez.
+
+## Harita
+
+Grim Crypt sekmesindeki **Dünya haritası**, oyunun kendi minimap karolarından birleştirilir (kaynak: [JellyBitz/xSROMap](https://github.com/JellyBitz/xSROMap), MIT). Koordinat eşlemesi kesindir: harita pikseli = oyun koordinatı / 4 + ofset. Yeniden üretmek için `tools\build-world-map.ps1`. Nanzhang bölgesinin karosu bu veri setinde yoktur.
 
 ## Lisans
 

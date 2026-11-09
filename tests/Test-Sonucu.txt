@@ -114,25 +114,25 @@ PASS · D15 entrance has a road route from its city
 PASS · D16 entrance has a road route from its city
 PASS · D17 entrance has a road route from its city
 PASS · D18 entrance has a road route from its city
-PASS · World map pixel mapping matches the six landmark references within 15 pixels
-PASS · D01 entrance maps onto the world map artwork
-PASS · D02 entrance maps onto the world map artwork
-PASS · D03 entrance maps onto the world map artwork
-PASS · D04 entrance maps onto the world map artwork
-PASS · D05 entrance maps onto the world map artwork
-PASS · D06 entrance maps onto the world map artwork
-PASS · D07 entrance maps onto the world map artwork
-PASS · D08 entrance maps onto the world map artwork
-PASS · D09 entrance maps onto the world map artwork
-PASS · D10 entrance maps onto the world map artwork
-PASS · D11 entrance maps onto the world map artwork
-PASS · D12 entrance maps onto the world map artwork
-PASS · D13 entrance maps onto the world map artwork
-PASS · D14 entrance maps onto the world map artwork
-PASS · D15 entrance maps onto the world map artwork
-PASS · D16 entrance maps onto the world map artwork
-PASS · D17 entrance maps onto the world map artwork
-PASS · D18 entrance maps onto the world map artwork
+PASS · World map pixel scale matches the 192-unit region size
+PASS · D01 entrance lies on mapped terrain of the world map
+PASS · D02 entrance lies on mapped terrain of the world map
+PASS · D03 entrance lies on mapped terrain of the world map
+PASS · D04 entrance lies on mapped terrain of the world map
+PASS · D05 entrance lies on mapped terrain of the world map
+PASS · D06 entrance lies on mapped terrain of the world map
+PASS · D07 entrance lies on mapped terrain of the world map
+PASS · D08 entrance lies on mapped terrain of the world map
+PASS · D09 entrance lies on mapped terrain of the world map
+PASS · D10 entrance lies on mapped terrain of the world map
+PASS · D11 entrance lies on mapped terrain of the world map
+PASS · D12 entrance lies on mapped terrain of the world map
+PASS · D13 entrance lies on mapped terrain of the world map
+PASS · D14 entrance lies on mapped terrain of the world map
+PASS · D15 entrance lies on mapped terrain of the world map
+PASS · D16 entrance lies on mapped terrain of the world map
+PASS · D17 entrance lies on mapped terrain of the world map
+PASS · D18 entrance lies on mapped terrain of the world map
 PASS · Jangan screenshot start reaches a D17 local approach without teleport
 PASS · Normal movement keeps the route; a position jump requests a new route
 PASS · Walking shortcut requires clear ground and preserves ferry steps

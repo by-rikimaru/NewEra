@@ -7,13 +7,11 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 
-// World map: the Explorer artwork with the dungeon entrances placed at their world coordinates.
+// World map: the game's own terrain map with the dungeon entrances placed at their world coordinates.
 sealed class WorldMapView : Control {
-    // The artwork is an affine transform of the game world (scale, slight rotation, flipped Y).
-    // Fitted by least squares on six independent landmarks (Samarkand, Hotan and Jangan city icons, and the
-    // D05, D07, D17 positions read from the in-game world map); all six land within about 10 pixels.
-    internal const double AX = 0.17999, AY = 0.02399, AC = 2240.0, BX = -0.00750, BY = -0.15998, BC = 685.9;
-    internal const string ResourceName = "world-map.jpg";
+    // The map is stitched from the game's own minimap tiles (zoom 6, 4x4 regions per tile), so world
+    // coordinates map to pixels exactly: pixel = coordinate / 4 + offset, with Y flipped (north is up).
+    internal const double AX = 0.25, AY = 0.0, AC = 3408.0, BX = 0.0, BY = -0.25, BC = 1020.0;    internal const string ResourceName = "world-map.jpg";
     static readonly KeyValuePair<int, string>[] Towns = {
         new KeyValuePair<int, string>(20, "Constantinople"), new KeyValuePair<int, string>(25, "Samarkand"),
         new KeyValuePair<int, string>(5, "Hotan"), new KeyValuePair<int, string>(2, "Donwhang"),
@@ -119,7 +117,7 @@ sealed class WorldMapView : Control {
                 g.PixelOffsetMode = PixelOffsetMode.Half;
                 float left = (float)((0 - cx) * zoom + Width / 2.0), top = (float)((0 - cy) * zoom + Height / 2.0);
                 g.DrawImage(baseMap, new RectangleF(left, top, (float)(baseMap.Width * zoom), (float)(baseMap.Height * zoom)));            } else {
-                Label(g, "Harita resmi bulunamadı.", big, Brushes.White, 20, 60);
+                Label(g, "Harita resmi bulunamadı.", big, Brushes.White, 20, 20);
             }
             foreach (var town in Towns) {
                 var gate = ExpeditionRules.Network.Gates.FirstOrDefault(x => x.Id == town.Key);
@@ -137,7 +135,7 @@ sealed class WorldMapView : Control {
                 g.FillEllipse(visited ? Brushes.SeaGreen : Brushes.OrangeRed, p.X - 7, p.Y - 7, 14, 14);
                 g.DrawEllipse(Pens.White, p.X - 7, p.Y - 7, 14, 14);
                 Label(g, d.Code, selected ? big : small, selected ? Brushes.Gold : Brushes.White, p.X + 10, p.Y - (selected ? 22 : 18));
-                if (selected || zoom > 0.8) Label(g, d.Name, small, Brushes.White, p.X + 10, p.Y + 4);
+                if (selected || zoom > 0.55) Label(g, d.Name, small, Brushes.White, p.X + 10, p.Y + 4);
             }
             if (Player != null && Player.Outside) {
                 var p = S(Player.X, Player.Y);
@@ -145,10 +143,12 @@ sealed class WorldMapView : Control {
                 g.DrawEllipse(Pens.Black, p.X - 6, p.Y - 6, 12, 12);
                 Label(g, "Sen", small, Brushes.Cyan, p.X + 8, p.Y - 8);
             }
-            using (var back = new SolidBrush(Color.FromArgb(150, 0, 0, 0)))
-                g.FillRectangle(back, 6, 6, 560, 38);
-            g.DrawString("Kırmızı: giriş · Yeşil: girildi · Altın halka: seçili · Mavi: şehir · Turkuaz: karakter\nFare tekerleği: yakınlaştır · Sürükle: kaydır · Çift tık: sığdır · Noktaya tıkla: dungeon seç", small, Brushes.White, 10, 8);
-        }
+            const string legend = "Kırmızı: giriş · Yeşil: girildi · Altın halka: seçili · Mavi: şehir · Turkuaz: karakter\nFare tekerleği: yakınlaştır · Sürükle: kaydır · Çift tık: sığdır · Noktaya tıkla: dungeon seç";
+            var legendSize = g.MeasureString(legend, small);
+            float legendTop = Height - legendSize.Height - 14;
+            using (var back = new SolidBrush(Color.FromArgb(170, 0, 0, 0)))
+                g.FillRectangle(back, 6, legendTop - 4, legendSize.Width + 8, legendSize.Height + 8);
+            g.DrawString(legend, small, Brushes.White, 10, legendTop);        }
     }
 
     protected override void OnMouseWheel(MouseEventArgs e) {
