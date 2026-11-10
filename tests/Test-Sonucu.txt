@@ -70,24 +70,24 @@ PASS · D18 Solo Trial portal linked from correct entrance
 PASS · D18 exact count completion matches
 PASS · D18 incomplete count rejected
 PASS · D18 other dungeon count rejected
-PASS · D01 initial room has three distinct floor waypoints
-PASS · D02 initial room has three distinct floor waypoints
-PASS · D03 initial room has three distinct floor waypoints
-PASS · D04 initial room has three distinct floor waypoints
-PASS · D05 initial room has three distinct floor waypoints
-PASS · D06 initial room has three distinct floor waypoints
-PASS · D07 initial room has three distinct floor waypoints
-PASS · D08 initial room has three distinct floor waypoints
-PASS · D09 initial room has three distinct floor waypoints
-PASS · D10 initial room has three distinct floor waypoints
-PASS · D11 initial room has three distinct floor waypoints
-PASS · D12 initial room has three distinct floor waypoints
-PASS · D13 initial room has three distinct floor waypoints
-PASS · D14 initial room has three distinct floor waypoints
-PASS · D15 initial room has three distinct floor waypoints
-PASS · D16 initial room has three distinct floor waypoints
-PASS · D17 initial room has three distinct floor waypoints
-PASS · D18 initial room has three distinct floor waypoints
+PASS · D01 initial room sweep has distinct floor waypoints (9)
+PASS · D02 initial room sweep has distinct floor waypoints (8)
+PASS · D03 initial room sweep has distinct floor waypoints (10)
+PASS · D04 initial room sweep has distinct floor waypoints (10)
+PASS · D05 initial room sweep has distinct floor waypoints (8)
+PASS · D06 initial room sweep has distinct floor waypoints (10)
+PASS · D07 initial room sweep has distinct floor waypoints (10)
+PASS · D08 initial room sweep has distinct floor waypoints (10)
+PASS · D09 initial room sweep has distinct floor waypoints (8)
+PASS · D10 initial room sweep has distinct floor waypoints (10)
+PASS · D11 initial room sweep has distinct floor waypoints (11)
+PASS · D12 initial room sweep has distinct floor waypoints (10)
+PASS · D13 initial room sweep has distinct floor waypoints (10)
+PASS · D14 initial room sweep has distinct floor waypoints (11)
+PASS · D15 initial room sweep has distinct floor waypoints (9)
+PASS · D16 initial room sweep has distinct floor waypoints (10)
+PASS · D17 initial room sweep has distinct floor waypoints (9)
+PASS · D18 initial room sweep has distinct floor waypoints (10)
 PASS · Unloaded mobs do not advance room and Envy remains eligible
 PASS · Duplicate dead snapshots do not advance the room
 PASS · Three distinct confirmed deaths advance to the next room

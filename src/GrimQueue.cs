@@ -125,6 +125,7 @@ sealed partial class MemorySelectV3Form {
         else if (queueRunning) queueInfo.Text = "Çalışıyor " + (queueIndex + 1) + "/" + queue.Count + " · " + string.Join(" → ", queue.Select(d => d.Code));
         else queueInfo.Text = "Hazır: " + string.Join(" → ", queue.Select(d => d.Code)) + " · Sırayı dungeon dışından başlat.";
         worldMap.Invalidate();
+        RefreshRoutes();
     }
 
     void SelectDungeonRow(DungeonLocation d) {

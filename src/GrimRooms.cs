@@ -38,11 +38,23 @@ sealed class GrimRooms {
         Position[] cells = floor.Cells.Values.Select(floor.PositionOf).ToArray();
         areas = marks.Select(row => Enumerable.Range(0, 3)
             .Select(i => V2Rules.Center(row[i * 2], row[i * 2 + 1], floor.Origin.Height)).ToArray()).ToArray();
-        waypoints = areas.Select(points => points.Select(point => {
-            Position nearest = cells.OrderBy(cell => cell.Distance(point)).First();
-            if (nearest.Distance(point) > 8) throw new InvalidDataException("Grim waypoint is outside the captured floor.");
-            return nearest;
-        }).ToArray()).ToArray();
+        var centers = areas.Select(points => V2Rules.Center(points.Average(p => p.X), points.Average(p => p.Y), points[0].Height)).ToArray();
+        waypoints = areas.Select((points, roomIndex) => {
+            var list = points.Select(point => {
+                Position nearest = cells.OrderBy(cell => cell.Distance(point)).First();
+                if (nearest.Distance(point) > 8) throw new InvalidDataException("Grim waypoint is outside the captured floor.");
+                return nearest;
+            }).ToList();
+            // Sweep the room square by square: floor points every ~22 units, so a mob is never walked past unseen.
+            foreach (Position cell in cells.OrderBy(c => c.Y).ThenBy(c => c.X)) {
+                if (cell.Distance(centers[roomIndex]) > 60) continue;
+                int nearestRoom = 0;
+                for (int k = 1; k < centers.Length; k++) if (cell.Distance(centers[k]) < cell.Distance(centers[nearestRoom])) nearestRoom = k;
+                if (nearestRoom != roomIndex || list.Any(p => p.Distance(cell) < 22)) continue;
+                list.Add(cell);
+            }
+            return list.ToArray();
+        }).ToArray();
         kills = new int[areas.Length];
     }
 
@@ -59,7 +71,7 @@ sealed class GrimRooms {
     }
 
     int RoomOf(Monster mob) {
-        double best = 32;
+        double best = 90;
         int result = -1;
         for (int i = 0; i < areas.Length; i++) {
             double distance = areas[i].Min(point => point.Distance(mob.Position));
@@ -95,8 +107,14 @@ sealed class GrimRooms {
 
     internal Position Next(Position player) {
         if (room == waypoints.Length) return null;
-        if (destination == null) destination = waypoints[room].Where(point => !visited.Contains(point))
-            .OrderBy(point => point.Distance(player)).FirstOrDefault();
+        if (destination == null) {
+            destination = waypoints[room].Where(point => !visited.Contains(point)).OrderBy(point => point.Distance(player)).FirstOrDefault();
+            // Whole room swept and still fewer than 3 kills: sweep it again.
+            if (destination == null) {
+                foreach (Position point in waypoints[room]) visited.Remove(point);
+                destination = waypoints[room].OrderBy(point => point.Distance(player)).FirstOrDefault();
+            }
+        }
         return destination;
     }
 

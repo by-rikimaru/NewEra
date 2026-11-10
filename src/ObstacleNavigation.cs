@@ -14,10 +14,16 @@ sealed class ObstaclePath {
  internal void Clear(){open.Clear();closed.Clear();tested.Clear();blocked.Clear();trouble.Clear();Route=null;Failed=false;working=null;}
  internal void Begin(Position start,Position end,Func<Position,bool> constraint,double arrivalTolerance=3){
   open.Clear();closed.Clear();tested.Clear();Route=null;Failed=false;Queries=0;ClosestDistance=double.MaxValue;working=closest=null;origin=start.Copy();goal=end.Copy();allowed=constraint;
-  tolerance=arrivalTolerance;minX=Math.Min(start.X,end.X)-384;maxX=Math.Max(start.X,end.X)+384;minY=Math.Min(start.Y,end.Y)-384;maxY=Math.Max(start.Y,end.Y)+384;
+  tolerance=arrivalTolerance;climb=end.Height-start.Height;slopeX=end.X-start.X;slopeY=end.Y-start.Y;slopeLength=slopeX*slopeX+slopeY*slopeY;
+  slope=Math.Abs(climb)>8&&Math.Abs(climb)<600&&end.Height!=0&&slopeLength>1&&slopeLength<=400*400;
+  minX=Math.Min(start.X,end.X)-384;maxX=Math.Max(start.X,end.X)+384;minY=Math.Min(start.Y,end.Y)-384;maxY=Math.Max(start.Y,end.Y)+384;
   var first=new Node();open.Add(first.Key,first);
  }
- Position At(Node n){return V2Rules.Center(origin.X+n.X*Step,origin.Y+n.Y*Step,origin.Height);}
+ // A short final approach that climbs (stairs, ramps) must be queried at the slope's height, not at the start's: the client rejects points at the wrong height.
+ bool slope;double climb,slopeX,slopeY,slopeLength;
+ Position At(Node n){double x=origin.X+n.X*Step,y=origin.Y+n.Y*Step,z=origin.Height;
+  if(slope){double t=Math.Max(0,Math.Min(1,((x-origin.X)*slopeX+(y-origin.Y)*slopeY)/slopeLength));z=origin.Height+climb*t;}
+  return V2Rules.Center(x,y,(float)z);}
  internal bool Pass(Position a,Position b,Func<Position,Position,bool> probe){
   string key=EdgeKey(a,b);if(blocked.Contains(key))return false;
   foreach(Position p in trouble){double dx=b.X-a.X,dy=b.Y-a.Y,length=dx*dx+dy*dy;double t=length<.001?0:Math.Max(0,Math.Min(1,((p.X-a.X)*dx+(p.Y-a.Y)*dy)/length));if(Math.Sqrt(Math.Pow(a.X+t*dx-p.X,2)+Math.Pow(a.Y+t*dy-p.Y,2))<2)return false;}
@@ -26,10 +32,10 @@ sealed class ObstaclePath {
  }
  internal void Advance(Func<Position,Position,bool> probe,int budget){
   int used=0,iterations=0;while(Route==null&&!Failed&&used<budget&&iterations++<128){
-   if(Queries>=12000||closed.Count>=6000){Failed=true;return;}
+   if(Queries>=1500||closed.Count>=800){Failed=true;return;}
    if(working==null){if(open.Count==0){Failed=true;return;}working=open.Values.OrderBy(n=>n.G+At(n).Distance(goal)).ThenBy(n=>At(n).Distance(goal)).First();open.Remove(working.Key);closed.Add(working.Key);direction=-1;}
    Position here=At(working);if(here.Distance(goal)<ClosestDistance){ClosestDistance=here.Distance(goal);closest=working;}
-   if(direction==-1){direction=0;if(here.Distance(goal)<=12&&(allowed==null||allowed(goal))){bool near=here.Distance(goal)<=tolerance;if(!near)used++;if(near||Pass(here,goal,probe)){var path=new List<Position>();if(!near)path.Add(goal.Copy());for(Node n=working;n!=null;n=n.Parent)path.Add(At(n));path.Reverse();Route=path;return;}}}
+   if(direction==-1){direction=0;if(here.Distance(goal)<=(working.Parent==null?(slope?300:48):12)&&(allowed==null||allowed(goal))){bool near=here.Distance(goal)<=tolerance;if(!near)used++;if(near||Pass(here,goal,probe)){var path=new List<Position>();if(!near)path.Add(goal.Copy());for(Node n=working;n!=null;n=n.Parent)path.Add(At(n));path.Reverse();Route=path;return;}}}
    if(direction>=8){working=null;continue;}
    int d=direction++;int nx=d==0||d==4||d==6?1:d==1||d==5||d==7?-1:0,ny=d==2||d==4||d==5?1:d==3||d==6||d==7?-1:0;
    var next=new Node{X=working.X+nx,Y=working.Y+ny,G=working.G+Step*(d<4?1:Math.Sqrt(2)),Parent=working};

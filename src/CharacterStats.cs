@@ -161,9 +161,14 @@ sealed class StatPanel : Control {
             }
             using (var big = new Font("Segoe UI", 16f, FontStyle.Bold))
             using (var gold = new SolidBrush(Color.FromArgb(255, 205, 80))) {
+                float x0 = 4;
+                if (!string.IsNullOrEmpty(s.CharacterName)) {
+                    g.DrawString(s.CharacterName, big, text, 4, 0);
+                    x0 = 4 + g.MeasureString(s.CharacterName, big).Width + 6;
+                }
                 string level = "Seviye " + s.Level;
-                g.DrawString(level, big, gold, 4, 0);
-                float x = 4 + g.MeasureString(level, big).Width + 8;
+                g.DrawString(level, big, gold, x0, 0);
+                float x = x0 + g.MeasureString(level, big).Width + 8;
                 string more = "";
                 if (Stats != null && Stats.Started) {
                     more = "Oturum süresi " + Duration((Now - Stats.StartMs) / 60000.0);

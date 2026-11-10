@@ -24,29 +24,40 @@ static class ExpeditionRules {
  internal static bool Infrastructure(TransitGate g){return g.World==1&&g.Model>0&&(g.Id==1||g.Id==2||g.Id==5||g.Id==20||g.Id==25||g.Id==252||g.Id==330||g.Code.Contains("FERRY")||g.Code.Contains("FLYSHIP")||g.Code.Contains("TUNNEL"));}
  static readonly Lazy<RoadMesh> roads=new Lazy<RoadMesh>(()=>new RoadMesh(Network));
  internal static List<TransitStep> Plan(Position start,Position goal,HashSet<int> excluded=null){return roads.Value.Plan(start,goal,excluded);}
+ internal static bool TryGround(Position p,out float height){return roads.Value.TryGround(p,out height);}
 
 }
 sealed partial class MemorySelectV3Form {
  readonly CompletionNotice completionNotice=new CompletionNotice();readonly CheckBox autoEnterGrim=new CheckBox();readonly Queue<TransitStep> transit=new Queue<TransitStep>();
  int expeditionPhase;long expeditionSince;TransitGate pendingArrival;uint portalUid;bool selectedPortal;Position returnOrigin,knownExit,lastExpeditionPosition;bool exitHolding;
  void StartGrimRequested(){RequireReader();snapshot=reader.Capture();var d=SelectedDungeon();if(d==null)throw new InvalidOperationException("Dungeon seç.");if(V3Data.IsCrypt(snapshot.Player)){ArmDungeon();return;}WalkDungeon();}
- void PrepareExpedition(DungeonLocation d){if(autoEnterGrim.Checked&&(!RunSendKeys||string.IsNullOrWhiteSpace(RunKeys)))throw new InvalidOperationException("Otomatik dungeon için saldırı tuşlarını ve Hedef doğrulanınca tuşlara bas seçeneğini ayarla.");completionNotice.Begin(reader.Process.Id);lastExpeditionPosition=snapshot.Player.Copy();mountPending=false;transit.Clear();expeditionPhase=0;pendingArrival=null;portalUid=0;selectedPortal=false;knownExit=null;exitHolding=false;if(autoEnterGrim.Checked&&d.Mode!="Solo Trial")throw new InvalidOperationException("Otomatik giriş için Solo Trial kaydı seç.");excludedRoadCells.Clear();useImportedRoad=true;if(returnBeforeTravel.Checked&&ExpeditionRules.Area(snapshot.Player)!=ExpeditionRules.Area(d.Entrance()))expeditionPhase=1;else BuildRoadRoute(d);}
+ bool WalkingTooFar(DungeonLocation d){try{if(V3Data.Town(snapshot.Player)!=null||!snapshot.Items.Any(i=>ExpeditionRules.ReturnIds.Contains(i.Model)&&i.Quantity>0&&i.Type!=0&&i.Slot>=13))return false;var p=snapshot.Player;double len=0;foreach(var s in ExpeditionRules.Plan(p,d.Entrance())){var q=s.To.Point();len+=p.Distance(q);p=q;}bool far=len>1500;if(far)Log("Yürüyüş yolu "+(int)len+" birim; Return Scroll ile şehre dönülüp oradan gidilecek.");return far;}catch{return false;}}
+ void PrepareExpedition(DungeonLocation d){bool free=d.Mode=="Serbest";if(!free&&autoEnterGrim.Checked&&(!RunSendKeys||string.IsNullOrWhiteSpace(RunKeys)))throw new InvalidOperationException("Otomatik dungeon için saldırı tuşlarını ve Hedef doğrulanınca tuşlara bas seçeneğini ayarla.");if(!free)completionNotice.Begin(reader.Process.Id);lastExpeditionPosition=snapshot.Player.Copy();mountPending=false;transit.Clear();expeditionPhase=0;pendingArrival=null;portalUid=0;selectedPortal=false;knownExit=null;exitHolding=false;if(!free&&autoEnterGrim.Checked&&d.Mode!="Solo Trial")throw new InvalidOperationException("Otomatik giriş için Solo Trial kaydı seç.");excludedRoadCells.Clear();useImportedRoad=true;if((returnBeforeTravel.Checked&&ExpeditionRules.Area(snapshot.Player)!=ExpeditionRules.Area(d.Entrance()))||WalkingTooFar(d))expeditionPhase=1;else BuildRoadRoute(d);}
  readonly HashSet<int> excludedRoadCells=new HashSet<int>();
  bool useImportedRoad, importedRoadActive;
  void BuildRoadRoute(DungeonLocation dungeon){
   List<TransitStep> imported=null;
-  if(useImportedRoad){try{imported=PhBotRoutes.TryPlan(snapshot.Player,dungeon);}catch(Exception error){Log("phBot yol kaydı okunamadı · "+error.Message);}}
+  if(useImportedRoad&&dungeon.Mode!="Serbest"){try{imported=PhBotRoutes.TryPlan(snapshot.Player,dungeon);}catch(Exception error){Log("phBot yol kaydı okunamadı · "+error.Message);}}
   importedRoadActive=imported!=null;
-  var plan=imported??ExpeditionRules.Plan(snapshot.Player,dungeon.Entrance(),excludedRoadCells);
+  var plan=imported??PlanRoad(snapshot.Player,dungeon.Entrance());
+  // Stairs and gates are missing from the map data: append a path the user walked once by hand, when it joins this route to the entrance.
+  if(imported==null)plan=ChooseLearned(snapshot.Player,dungeon.Entrance(),plan);
   transit.Clear();foreach(var step in plan)transit.Enqueue(step);
   expeditionPhase=3;routeWalker.Reset();
   Log((importedRoadActive?"phBot rotası":"Harita rotası")+" · "+dungeon.Code+" · "+plan.Count+" adım · "+plan.Count(step=>step.From!=null)+" geçiş");
  }
+ // Cells the walker gave up on are remembered between runs, so the same blocked spot is not tried again every time.
+ List<TransitStep> PlanRoad(Position start,Position goal){
+  var skip=new HashSet<int>(excludedRoadCells);foreach(var id in settings.BlockedRoadCells)skip.Add(id);
+  try{return ExpeditionRules.Plan(start,goal,skip);}
+  catch(InvalidOperationException){if(settings.BlockedRoadCells.Count==0)throw;Log("Öğrenilen engeller rotayı kapattı; liste sıfırlandı.");settings.BlockedRoadCells.Clear();try{settings.Save();}catch{}return ExpeditionRules.Plan(start,goal,excludedRoadCells);}
+ }
+ void RememberBlockedCell(int id){if(settings.BlockedRoadCells.Contains(id))return;settings.BlockedRoadCells.Add(id);if(settings.BlockedRoadCells.Count>200)settings.BlockedRoadCells.RemoveAt(0);try{settings.Save();}catch{}}
  bool TryReplanRoad(string reason){
   if(operation!=OperationMode.Travel||expeditionPhase!=3||transit.Count==0||grim.Location==null||excludedRoadCells.Count>=4)return false;
   var step=transit.Peek();
   if(importedRoadActive&&step.From==null){useImportedRoad=false;Log("phBot ara noktası yerel sorguda kapalı · "+reason);BuildRoadRoute(grim.Location);return true;}
-  if(step.CellId<0||!excludedRoadCells.Add(step.CellId))return false;
+  if(step.CellId<0||!excludedRoadCells.Add(step.CellId))return false;RememberBlockedCell(step.CellId);
   Log("Yol noktası çıkarıldı · "+step.To.X+" / "+step.To.Y+" · "+reason);
   BuildRoadRoute(grim.Location);return true;
  }
@@ -75,6 +86,7 @@ sealed partial class MemorySelectV3Form {
   if(expeditionPhase==4){if(now-expeditionSince>60000){Stop("Solo Trial girişi doğrulanamadı; tekrar giriş gönderilmedi.");return;}status.Text="Solo Trial yüklenmesi bekleniyor.";return;}
   var portal=snapshot.Npcs.Where(n=>n.Model==(uint)d.GateModel&&n.Position.Distance(d.Entrance())<160).OrderBy(n=>n.Position.Distance(d.Entrance())).FirstOrDefault();var entrancePoint=portal==null?d.Entrance():portal.Position;
   if(!ExpeditionRules.ApproachReached(snapshot.Player,entrancePoint)){WalkChecked(entrancePoint,now,null,"Grim girişine yürüyor: "+d.Code,false);return;}
+  if(d.Mode=="Serbest"){Stop("Hedefe ulaşıldı · "+d.Name);return;}
   if(!EnsureTravelMount(false,now))return;
   if(!autoEnterGrim.Checked){Stop("Dungeon girişine ulaşıldı; otomatik giriş kapalı.");return;}
   if(!completionNotice.Ready){if(!string.IsNullOrEmpty(completionNotice.Error)){Stop(completionNotice.Error);return;}status.Text="Önceki bitiş mesajları ayrılıyor; otomatik giriş hazırlanıyor.";return;}

@@ -47,7 +47,7 @@ sealed class Monster {
  public uint Uid,Model,Address; public string Name;public Position Position;public bool Alive;public uint? Health;public int Rank=-1;public bool Party;
 }
 sealed class Snapshot {
- public bool MountKnown;public uint MountUid;public List<WorldNpc> Npcs=new List<WorldNpc>();public Position Player; public uint Selected;public GrimObservation Grim=new GrimObservation();public bool PlayerAlive;public bool StatsKnown;public uint Hp,MaxHp,Mp,MaxMp,SpExp,Sp;public int Level;public ulong Exp;public int Berserk=-1;public bool SpeedKnown,SpeedActive,InventoryKnown;public int? MinDurability;public List<BagItem> Items=new List<BagItem>();public List<Monster> Monsters=new List<Monster>();
+ public string CharacterName;public bool MountKnown;public uint MountUid;public List<WorldNpc> Npcs=new List<WorldNpc>();public Position Player; public uint Selected;public GrimObservation Grim=new GrimObservation();public bool PlayerAlive;public bool StatsKnown;public uint Hp,MaxHp,Mp,MaxMp,SpExp,Sp;public int Level;public ulong Exp;public int Berserk=-1;public bool SpeedKnown,SpeedActive,InventoryKnown;public int? MinDurability;public List<BagItem> Items=new List<BagItem>();public List<Monster> Monsters=new List<Monster>();
 }
 sealed class GameReader:IDisposable {
  const string ClientHash="51081AC1F776A38FE0AF58E2A961BFA9E8166506AE26DC8DCFD8008736725C05";
@@ -77,7 +77,7 @@ sealed class GameReader:IDisposable {
  void ReadStats(uint player,Snapshot s){try{byte[] b=Read(player+0x450,16);uint hp=BitConverter.ToUInt32(b,0),mp=BitConverter.ToUInt32(b,4),maxHp=BitConverter.ToUInt32(b,8),maxMp=BitConverter.ToUInt32(b,12);int level=Read(player+0x868,1)[0];ulong exp=BitConverter.ToUInt64(Read(player+0x870,8),0);uint spExp=U32(player+0x878),sp=U32(player+0x880);if(maxHp==0||maxHp>10000000||hp>maxHp||maxMp>10000000||mp>maxMp||level<1||level>140||spExp>=400||sp>1000000000)return;s.Hp=hp;s.Mp=mp;s.MaxHp=maxHp;s.MaxMp=maxMp;s.Level=level;s.Exp=exp;s.SpExp=spExp;s.Sp=sp;s.StatsKnown=true;}catch(IOException){}} internal Snapshot Capture(){
   Process.Refresh();if(Process.HasExited||Process.StartTime.ToUniversalTime().Ticks!=started)throw new IOException("Hedef işlem kapandı.");
   uint player=Global(0xAEF5EC);if(player<65536)throw new IOException("Karakter dünyada değil.");
-  var snap=new Snapshot();snap.Player=ReadPosition(player);snap.PlayerAlive=(U32(player+0x65c)&1)!=0;int gauge=Read(player+0x886,1)[0];snap.Berserk=gauge<=5?gauge:-1;ReadStats(player,snap);ReadMaintenance(player,snap);ReadGrim(snap);try{if(GuardBase!=0){snap.MountUid=U32(GuardBase+0xc216d8);snap.MountKnown=true;}}catch(IOException){}
+  var snap=new Snapshot();snap.Player=ReadPosition(player);snap.PlayerAlive=(U32(player+0x65c)&1)!=0;int gauge=Read(player+0x886,1)[0];snap.Berserk=gauge<=5?gauge:-1;ReadStats(player,snap);try{snap.CharacterName=ReadWideString(player+0x114);}catch(IOException){}ReadMaintenance(player,snap);ReadGrim(snap);try{if(GuardBase!=0){snap.MountUid=U32(GuardBase+0xc216d8);snap.MountKnown=true;}}catch(IOException){}
   try {uint ui=Global(0xD0F80C);if(ui!=0){snap.Selected=U32(ui+0x62c);if(snap.Selected==0)snap.Selected=U32(ui+0x628);}}catch(IOException){}
   uint root=Global(0xAEF5FC);if(root<65536)throw new IOException("Nesne listesi bulunamadı.");
   var stack=new Stack<uint>();var seen=new HashSet<uint>();stack.Push(U32(root+4));
@@ -96,7 +96,7 @@ sealed class GameReader:IDisposable {
   if(Global(0xAEF5EC)!=player||Global(0xAEF5FC)!=root)throw new IOException("Dünya değişti; yeniden okunacak.");
   return snap;
  }
- internal string ReadSmallString(uint address){byte[] b=Read(address,24);uint length=BitConverter.ToUInt32(b,16),cap=BitConverter.ToUInt32(b,20);if(length>2048||cap<length)throw new IOException("Geçersiz metin.");return Encoding.UTF8.GetString(cap<=15?b.Take((int)length).ToArray():Read(BitConverter.ToUInt32(b,0),(int)length));}
+ internal string ReadWideString(uint address){byte[] b=Read(address,24);uint length=BitConverter.ToUInt32(b,16),cap=BitConverter.ToUInt32(b,20);if(length==0||length>32||cap<length)throw new IOException("Geçersiz metin.");byte[] data=cap<8?b.Take((int)length*2).ToArray():Read(BitConverter.ToUInt32(b,0),(int)length*2);string text=Encoding.Unicode.GetString(data);if(text.Any(ch=>char.IsControl(ch)))throw new IOException("Geçersiz metin.");return text;} internal string ReadSmallString(uint address){byte[] b=Read(address,24);uint length=BitConverter.ToUInt32(b,16),cap=BitConverter.ToUInt32(b,20);if(length>2048||cap<length)throw new IOException("Geçersiz metin.");return Encoding.UTF8.GetString(cap<=15?b.Take((int)length).ToArray():Read(BitConverter.ToUInt32(b,0),(int)length));}
  void ReadGrim(Snapshot s){if(GuardBase==0)return;try{uint a=GuardBase+0xad2298;uint before=U32(a);string title=ReadSmallString(a+8),text=ReadSmallString(a+32);uint after=U32(a);if(before!=after)return;s.Grim=new GrimObservation{Id=before,Title=title,Text=text,Known=before>0&&before<100000};}catch(IOException){} }
  internal bool ValidateNpc(WorldNpc npc){try{return npc!=null&&U32(npc.Address+0xf8)==npc.Uid&&U32(U32(npc.Address+0x220)+4)==npc.Model;}catch(IOException){return false;}}
  internal bool ValidateAnyTarget(Monster m){try{return U32(m.Address+0xf8)==m.Uid&&(U32(m.Address+0x65c)&1)!=0&&U32(U32(m.Address+0x220)+4)==m.Model;}catch(IOException){return false;}}
