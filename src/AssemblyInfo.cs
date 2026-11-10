@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 [assembly: AssemblyTitle("New Era Memory Select")]
 [assembly: AssemblyProduct("Rikimaru.NewEra.MemorySelect")]
 [assembly: AssemblyCompany("by Rikimaru")]
