@@ -1,4 +1,4 @@
-﻿# New Era Memory Select
+# New Era Memory Select
 
 New Era için C# / .NET Framework ile yazılmış bot. SQL veritabanı kullanmaz: ayarlar ve harita tabloları JSON, navigasyon ağı sıkıştırılmış ikili veridir.
 
@@ -67,6 +67,11 @@ Güncellemeler RSA imzasıyla doğrulanır. Doğrulama genel anahtarı `data\upd
 Grim Crypt sekmesindeki "Çalıştırma sırası" paneli, seçtiğin Solo Trial dungeonları seçtiğin sırayla otomatik çalıştırır. Dungeon'u tabloda çift tıkla, **Ekle / Çıkar** düğmesiyle ya da haritada **Shift+tık** ile sıraya al; ▲ ▼ ile sırayı değiştir. Sıra haritada numara ve kesik çizgiyle görünür.
 
 **Sırayı başlat:** bot girişe yürür, girer, dungeon'u bitirir, **Dungeon Exit NPC'si** ile çıkar (oyun verisindeki ışınlanma kaydı: Donwhang, 5000 altın) ve sıradakine geçer. Bitirilen dungeon "Girdim" olarak işaretlenir. Sıra bitince "Sıra bitince Return Scroll ile şehre dön" açıksa bir Return Scroll kullanır. Çıkış otomatik yapılamazsa bot loga yazar ve Dungeon Exit'e elle tıklamanı bekler.
+
+## Yenilikler penceresi
+
+Program güncellendikten sonra ilk açılışta o sürümün değişikliklerini gösterir. **Bir daha gösterme** kutusu işaretlenirse pencere bir daha çıkmaz. Notlar src\WhatsNew.cs içindedir; her sürümde buraya bir kayıt eklenir.
+
 ## Karakter durumu
 
 Av / Ayarlar sekmesinin üstündeki panel HP (kırmızı), MP (mavi), EXP (yeşil) ve SP (sarı) çubuklarını canlı gösterir; oturum toplamı, dakikalık ve saatlik EXP/SP kazancı, seviyeye ve sonraki SP'ye kalan süreyi hesaplar. Hız son beş dakikanın ortalamasıdır (oturum daha kısaysa oturum ortalaması). Ölümde kaybedilen EXP kazanç sayılmaz. Değerler karakter nesnesinden okunur (HP/MP, seviye, EXP, SP alanları); seviye-EXP tablosu oyun verisinden alınmıştır (data\level-exp.json).

@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference='Stop'
+$ErrorActionPreference='Stop'
 Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
 New-Item -ItemType Directory -Force build | Out-Null
 $compiler=(Join-Path $env:WINDIR "Microsoft.NET/Framework/v4.0.30319/csc.exe")
@@ -12,7 +12,7 @@ $buildArgs=@('/nologo','/target:exe','/platform:x86','/optimize+','/utf8output',
 Get-ChildItem -LiteralPath data/grim-embedded -Filter '*.jpg' | ForEach-Object {$buildArgs+='/resource:'+$_.FullName+',Grim.'+$_.Name}
 $buildArgs+=@('/resource:data/road-mesh.bin.gz,road-mesh.bin.gz','/resource:data/transport-network.json,transport-network.json','/resource:data/return-scrolls.json,return-scrolls.json')
 $buildArgs+=@('/resource:assets/NewEra-Kullanim-Kilavuzu.pdf,manual.pdf','/resource:data/Nanzhang/Nanzhang-NPC-Haritasi.jpg,nanzhang-map.jpg','/resource:data/Nanzhang/Nanzhang-Harita-Verisi.json,nanzhang-data.json')
-$buildArgs+=@('src\MemoryCoreV3.cs','src\RulesV2.cs','src\AutomationV3.cs','src\V3Ui.cs','src\V3App.cs','src\DungeonRadar.cs','src\GrimRooms.cs','src\FloorNavigation.cs','src\ObstacleNavigation.cs','src\RunSettings.cs','src\Hotkeys.cs','src\AutoUpdate.cs','src\AssemblyInfo.cs','src\DualAccount.cs','src\ModernUi.cs','src\Expedition.cs','src\CompletionNotice.cs','src\MountTravel.cs','src\LogView.cs','src\RoadMesh.cs','src\PhBotRoutes.cs','src\WorldMap.cs','src\GrimQueue.cs','src\CharacterStats.cs')
+$buildArgs+=@('src\MemoryCoreV3.cs','src\RulesV2.cs','src\AutomationV3.cs','src\V3Ui.cs','src\V3App.cs','src\DungeonRadar.cs','src\GrimRooms.cs','src\FloorNavigation.cs','src\ObstacleNavigation.cs','src\RunSettings.cs','src\Hotkeys.cs','src\AutoUpdate.cs','src\AssemblyInfo.cs','src\DualAccount.cs','src\ModernUi.cs','src\Expedition.cs','src\CompletionNotice.cs','src\MountTravel.cs','src\LogView.cs','src\RoadMesh.cs','src\PhBotRoutes.cs','src\WorldMap.cs','src\GrimQueue.cs','src\CharacterStats.cs','src\WhatsNew.cs')
 $buildArgs+='tests\V3Checks.cs'
 $buildArgs+='tests\NavigationChecks.cs'
 $buildArgs+='tests\GrimSurveyChecks.cs'

@@ -166,7 +166,7 @@ sealed partial class MemorySelectV3Form:Form {
  bool Press(ushort key){uint pid;uint thread=Native.GetWindowThreadProcessId(Native.GetForegroundWindow(),out pid);if(reader==null||pid!=reader.Process.Id)return false;ushort scan=(ushort)Native.MapVirtualKeyEx(key,0,Native.GetKeyboardLayout(thread));if(scan==0||!SendScan(scan,false)){Stop("Tuş gönderimi reddedildi.");return false;}heldScan=scan;release.Start();return true;}
  bool SendScan(ushort scan,bool up){var input=new Native.INPUT();input.type=1;input.data.key.scan=scan;input.data.key.flags=8u|(up?2u:0u);return Native.SendInput(1,new[]{input},Marshal.SizeOf(typeof(Native.INPUT)))==1;}
  void ReleaseKey(){release.Stop();if(heldScan!=0){if(SendScan(heldScan,true))heldScan=0;else{active=false;release.Start();status.Text="Tuş bırakılamadı; otomasyon durdu.";}}}
- protected override void OnShown(EventArgs e){base.OnShown(e);RegisterShortcut();SetupUpdates();}
+ protected override void OnShown(EventArgs e){base.OnShown(e);RegisterShortcut();SetupUpdates();BeginInvoke(new Action(ShowWhatsNew));}
  protected override void WndProc(ref Message m){if(m.Msg==0x312&&m.WParam.ToInt32()==1){try{HandleShortcut();}catch(Exception e){Stop(e.Message);}}base.WndProc(ref m);}
  protected override void OnFormClosed(FormClosedEventArgs e){completionNotice.Dispose();dualTimer.Stop();dualTimer.Dispose();ReleaseClientClaim();poll.Stop();updateTimer.Stop();updateTimer.Dispose();Stop("Kapatıldı.");Native.UnregisterHotKey(Handle,1);try{SaveSettings();}catch{}if(reader!=null)reader.Dispose();poll.Dispose();release.Dispose();base.OnFormClosed(e);}
  [STAThread]static void Main(string[] args){try{
