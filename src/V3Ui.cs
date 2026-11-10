@@ -36,7 +36,7 @@ sealed partial class MemorySelectV3Form:Form {
   var workspace=new Panel{Dock=DockStyle.Fill};workspace.Controls.Add(tabs);workspace.Controls.Add(BuildLogHost());
   headerPanel=header;Fancy.Buffer(header);header.Paint+=PaintHeader;aurora=new AuroraBar{Dock=DockStyle.Top,Height=5};Controls.Add(workspace);Controls.Add(footer);Controls.Add(aurora);Controls.Add(header);
   explorerView.LoadResource("explorer-52.jpg");tabs.SelectedIndexChanged+=delegate{stop.Text=tabs.SelectedIndex==2?"Grim Crypt Durdur":"Durdur";start.Text=tabs.SelectedIndex==2?"Grim Crypt Başlat":"Başlat";if(tabs.SelectedIndex==1)explorerView.Fit();if(tabs.SelectedIndex==2)dungeonView.Fit();};
-  settings=V3Settings.Load();RestoreSettings();RestoreHotkey();RestoreUpdateControls();poll.Interval=250;poll.Tick+=delegate{Tick();RecordStatusLog();};poll.Start();release.Interval=35;release.Tick+=delegate{ReleaseKey();};RefreshProcesses();BuildDualAccount();BuildModernTabs();BuildLogTab();BuildNavigation(workspace);ApplyTheme();
+  settings=V3Settings.Load();RestoreSettings();RestoreHotkey();RestoreUpdateControls();poll.Interval=250;poll.Tick+=delegate{Tick();RecordStatusLog();UpdateTitle();};poll.Start();release.Interval=35;release.Tick+=delegate{ReleaseKey();};RefreshProcesses();BuildDualAccount();BuildModernTabs();BuildLogTab();BuildNavigation(workspace);ApplyTheme();
  }
  ListBox sidebar;
  void BuildNavigation(Panel workspace){

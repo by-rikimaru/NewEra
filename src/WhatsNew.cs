@@ -22,6 +22,7 @@ static class ReleaseNotes {
             "Otomatik çıkış yalnızca dungeon sırası çalışırken yapılır; tek tek girdiğinde karakter Dungeon Exit önünde bekler.",
             "Yeni arayüz: yuvarlak köşeli, renk geçişli düğmeler (üzerine gelince ve basınca yumuşak geçiş), renk geçişli üst çubuk, başlıklarda kalın yazı ve üst çubuğun altında sürekli kayan ışık şeridi; seçtiğin temanın rengini izler.",
             "Sayfaların etrafındaki kalın beyaz çerçeve kaldırıldı; etkinlik günlüğü başlıklı, yuvarlak köşeli bir kartta, daha okunur yazıyla gösterilir.",
+            "Pencere başlığı karakter adıyla başlar (Rikimaru - New Era · Memory Select ...); iki hesap açıkken görev çubuğunda hangisinin hangisi olduğu görünür.",
             "Tema seçimi sağ üst köşeye (Görünüm sekmesi kaldırıldı); karakter durumu panelinde karakter adı gösterilir.",
             "Üst çubukta \"Yenilikler\" düğmesi tam görünür (pencere genişliği düzeltildi).",
             "Yenilikler penceresi artık tüm sürümlerin değişikliklerini listeler; üstteki Yenilikler düğmesiyle istediğin zaman açılır." } },

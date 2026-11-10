@@ -39,6 +39,12 @@ sealed partial class MemorySelectV3Form {
   if(sidebar!=null){sidebar.BackColor=sidebarColor;sidebar.Invalidate();}if(aurora!=null)aurora.Accent=accent;if(logHost!=null)logHost.Invalidate();if(headerPanel!=null)headerPanel.Invalidate(true);
  }
  Panel logHost;
+ // Window title starts with the character name, so two running copies can be told apart in the taskbar.
+ void UpdateTitle(){
+  string name=snapshot==null?null:snapshot.CharacterName;
+  string title=(string.IsNullOrEmpty(name)?"":name+" - ")+"New Era · Memory Select "+Application.ProductVersion+" · by Rikimaru";
+  if(Text!=title)Text=title;
+ }
  // Theme choice sits in the top right corner, under the brand text.
  void PlaceThemePicker(Label label){
   if(!headerPanel.Controls.Contains(themePicker)){headerPanel.Controls.Add(label);headerPanel.Controls.Add(themePicker);label.BringToFront();themePicker.BringToFront();}
