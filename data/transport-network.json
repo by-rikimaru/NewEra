@@ -3,7 +3,7 @@
     {
       "Id": 1,
       "Code": "GATE_CH",
-      "Model": 2094,
+      "Model": 2094, "BuildingX": 6461.4, "BuildingY": 1097.4,
       "Region": 25000,
       "X": 6432.9,
       "Y": 1096.9,
@@ -13,7 +13,7 @@
     {
       "Id": 2,
       "Code": "GATE_WC",
-      "Model": 2095,
+      "Model": 2095, "BuildingX": 3552.2, "BuildingY": 2112.8,
       "Region": 26265,
       "X": 3551.7,
       "Y": 2070.8,
@@ -43,7 +43,7 @@
     {
       "Id": 5,
       "Code": "GATE_KT",
-      "Model": 2096,
+      "Model": 2096, "BuildingX": 113.1, "BuildingY": 48.8,
       "Region": 23687,
       "X": 113.8,
       "Y": 15.3,
@@ -223,7 +223,7 @@
     {
       "Id": 20,
       "Code": "GATE_EU",
-      "Model": 19554,
+      "Model": 19554, "BuildingX": -10682, "BuildingY": 2584.6,
       "Region": 26959,
       "X": -10657.0,
       "Y": 2603.0,
@@ -273,7 +273,7 @@
     {
       "Id": 25,
       "Code": "GATE_CA",
-      "Model": 19555,
+      "Model": 19555, "BuildingX": -5184.3, "BuildingY": 2890.8,
       "Region": 27244,
       "X": -5157.0,
       "Y": 2830.1,
@@ -2023,7 +2023,7 @@
     {
       "Id": 252,
       "Code": "GATE_NANZHANG",
-      "Model": 61243,
+      "Model": 61243, "BuildingX": 5856, "BuildingY": -1728,
       "Region": 21413,
       "X": 5856.0,
       "Y": -1713.0,
@@ -4042,6 +4042,32 @@
       "From": 1,
       "To": 253,
       "Fee": 45000,
+      "Level": 0,
+      "Restrictions": [
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "From": 1,
+      "To": 2,
+      "Fee": 5000,
       "Level": 0,
       "Restrictions": [
         0,

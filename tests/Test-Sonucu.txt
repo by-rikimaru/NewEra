@@ -232,7 +232,17 @@ PASS · Resume only when death point reached
 PASS · Death limit stops BEFORE town or scroll
 PASS · Party resurrection resumes and keeps death count
 PASS · Recovery timeout stops without resend
-PASS · No reverse in bag stops
+PASS · Monster level table is read from game data
+PASS · Default filter allows everything
+PASS · Level 2 monster is below minimum level 3
+PASS · Level 2 monster is above maximum level 1
+PASS · Unknown level is never excluded
+PASS · Unique can be switched off
+PASS · Normal still allowed when Unique is off
+PASS · HP potion threshold
+PASS · MP potion threshold
+PASS · Potion key parsing
+PASS · No reverse in bag: resumes and walks back to the hunting area
 PASS · Late resurrection at death point after town request resumes
 PASS · Actual New Era Hotan spawn recognized
 PASS · Speed item cannot be used as reverse

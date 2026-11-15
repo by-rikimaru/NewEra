@@ -11,12 +11,14 @@ using System.Windows.Forms;
 sealed partial class MemorySelectV3Form {
     readonly List<DungeonLocation> queue = new List<DungeonLocation>();
     readonly ListBox queueList = new ListBox();
+    readonly List<string> pickOrder = new List<string>(); // dungeons ticked in the "Seç" column, in the order they were ticked
     readonly CheckBox queueReturnScroll = new CheckBox();
     readonly Label queueInfo = new Label();
     // Dungeon Exit NPC teleporter: gate 254, destination 2 (Donwhang). Nanzhang (252) is the other destination.
     const int ExitNpcGate = 254, ExitDestinationGate = 2;
     bool queueRunning, queueAdvancing;
     int queueExitPhase;
+    bool queueExitTalked;
     long queueExitSince;
     uint queueExitUid;
     int queueIndex;
@@ -24,7 +26,7 @@ sealed partial class MemorySelectV3Form {
     internal List<string> QueueOrder() { return queue.Select(d => d.Code).ToList(); }
 
     void BuildQueuePanel(Control host) {
-        var panel = new Panel { Dock = DockStyle.Bottom, Height = 276, Padding = new Padding(6) };
+        var panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(6) };
         var title = new Label { Text = "Çalıştırma sırası · Solo Trial · seçtiğin sırayla çalışır", Dock = DockStyle.Top, Height = 24, TextAlign = ContentAlignment.MiddleLeft };
         queueInfo.Dock = DockStyle.Top;
         queueInfo.Height = 40;
@@ -33,7 +35,8 @@ sealed partial class MemorySelectV3Form {
         queueList.IntegralHeight = false;
         queueList.HorizontalScrollbar = true;
         queueList.DoubleClick += delegate { Safe(RemoveSelectedFromQueue); };
-        var side = new FlowLayoutPanel { Dock = DockStyle.Right, Width = 190, FlowDirection = FlowDirection.TopDown, WrapContents = false };
+        queueList.SelectedIndexChanged += delegate { int i = queueList.SelectedIndex; if (i >= 0 && i < queue.Count) ShowDungeonImage(queue[i]); };
+        var side = new FlowLayoutPanel { Dock = DockStyle.Right, Width = 208, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true };
         side.Controls.Add(Btn("Ekle / Çıkar", ToggleSelectedInQueue, 170));
         var arrows = new FlowLayoutPanel { Width = 176, Height = 38, WrapContents = false, Margin = new Padding(0) };
         arrows.Controls.Add(Btn("▲", delegate { MoveQueue(-1); }, 80));
@@ -54,12 +57,25 @@ sealed partial class MemorySelectV3Form {
         panel.Controls.Add(title);
         host.Controls.Add(panel);
         dungeonGrid.CellDoubleClick += delegate(object sender, DataGridViewCellEventArgs e) {
-            if (e.RowIndex < 0 || e.ColumnIndex == 0) return;
+            if (e.RowIndex < 0 || e.ColumnIndex <= 1) return;
             var location = dungeonGrid.Rows[e.RowIndex].Tag as DungeonLocation;
             if (location != null) Safe(delegate { ToggleQueue(location); });
         };
     }
     void ToggleSelectedInQueue() {
+        // Rows ticked in the "Seç" column are added together; if all of them are already queued they are taken out again.
+        var picked = dungeonGrid.Rows.Cast<DataGridViewRow>().Where(r => Convert.ToBoolean(r.Cells[1].Value)).Select(r => r.Tag as DungeonLocation).Where(x => x != null).OrderBy(x => { int k = pickOrder.IndexOf(x.Code + "|" + x.Mode); return k < 0 ? int.MaxValue : k; }).ToList();
+        if (picked.Count > 0) {
+            if (queueRunning) throw new InvalidOperationException("Sıra çalışırken değiştirilemez. Önce durdur.");
+            var solo = picked.Where(x => x.Mode == "Solo Trial").ToList();
+            if (solo.Count == 0) throw new InvalidOperationException("Sıra yalnızca Solo Trial içindir. Solo Trial'ı işaretle.");
+            var missing = solo.Where(x => queue.All(q => q.Code != x.Code)).ToList();
+            if (missing.Count > 0) queue.AddRange(missing);
+            else foreach (var x in solo) queue.RemoveAll(q => q.Code == x.Code);
+            foreach (DataGridViewRow r in dungeonGrid.Rows) r.Cells[1].Value = false;
+            QueueChanged();
+            return;
+        }
         var d = SelectedDungeon();
         if (d == null) throw new InvalidOperationException("Dungeon seç.");
         ToggleQueue(d);
@@ -131,7 +147,7 @@ sealed partial class MemorySelectV3Form {
     void SelectDungeonRow(DungeonLocation d) {
         foreach (DataGridViewRow row in dungeonGrid.Rows) {
             var location = row.Tag as DungeonLocation;
-            if (location != null && location.Code == d.Code && location.Mode == d.Mode) { dungeonGrid.CurrentCell = row.Cells[1]; return; }
+            if (location != null && location.Code == d.Code && location.Mode == d.Mode) { dungeonGrid.CurrentCell = row.Cells[2]; return; }
         }
     }
 
@@ -149,7 +165,7 @@ sealed partial class MemorySelectV3Form {
 
     void BeginQueueEntry() {
         var d = queue[queueIndex];
-        queueExitPhase = 0;
+        queueExitPhase = 0; queueExitTalked = false;
         queueExitSince = 0;
         queueExitUid = 0;
         SelectDungeonRow(d);
@@ -226,7 +242,14 @@ sealed partial class MemorySelectV3Form {
                 if (now - queueExitSince > 5000) { Log("Sıra: Dungeon Exit seçimi doğrulanamadı; elle çıkış bekleniyor."); queueExitPhase = 3; }
                 return true;
             }
-            if (now - queueExitSince < 600) return true;
+            if (!queueExitTalked) {
+                if (!sender.Talk(queueExitUid)) { Log("Sıra: Dungeon Exit konuşması reddedildi; elle çıkış bekleniyor."); queueExitPhase = 3; return true; }
+                queueExitTalked = true;
+                queueExitSince = now;
+                status.Text = waiting + "Dungeon Exit ile konuşuluyor.";
+                return true;
+            }
+            if (now - queueExitSince < 900) return true;
             if (!sender.Teleport(queueExitUid, ExitNpcGate, ExitDestinationGate)) { Log("Sıra: Dungeon Exit ışınlanması reddedildi; elle çıkış bekleniyor."); queueExitPhase = 3; return true; }
             Log("Sıra: Dungeon Exit ile çıkış istendi · UID " + queueExitUid);
             queueExitSince = now;

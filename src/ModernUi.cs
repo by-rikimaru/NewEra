@@ -39,6 +39,21 @@ sealed partial class MemorySelectV3Form {
   if(sidebar!=null){sidebar.BackColor=sidebarColor;sidebar.Invalidate();}if(aurora!=null)aurora.Accent=accent;if(logHost!=null)logHost.Invalidate();if(headerPanel!=null)headerPanel.Invalidate(true);
  }
  Panel logHost;
+ // Dots on a thin splitter bar (the log area can be dragged up and down).
+ void PaintBarGrip(object sender,PaintEventArgs e){
+  var c=(Control)sender;
+  e.Graphics.SmoothingMode=System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+  using(var brush=new SolidBrush(Color.FromArgb(170,accentColor)))
+   for(int k=-2;k<=2;k++)e.Graphics.FillEllipse(brush,c.Width/2+k*10-2,c.Height/2-2,4,4);
+ }
+ // Dots on the draggable splitter so it is visible that the area can be resized.
+ void PaintGrip(object sender,PaintEventArgs e){
+  var sc=(SplitContainer)sender;
+  var r=sc.Orientation==Orientation.Horizontal?new Rectangle(0,sc.SplitterDistance,sc.Width,sc.SplitterWidth):new Rectangle(sc.SplitterDistance,0,sc.SplitterWidth,sc.Height);
+  e.Graphics.SmoothingMode=System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+  using(var brush=new SolidBrush(Color.FromArgb(170,accentColor)))
+   for(int k=-2;k<=2;k++)e.Graphics.FillEllipse(brush,r.X+r.Width/2+k*10-2,r.Y+r.Height/2-2,4,4);
+ }
  // Window title starts with the character name, so two running copies can be told apart in the taskbar.
  void UpdateTitle(){
   string name=snapshot==null?null:snapshot.CharacterName;

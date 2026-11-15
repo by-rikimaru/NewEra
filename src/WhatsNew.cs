@@ -10,6 +10,20 @@ static class ReleaseNotes {
 
     // Newest first.
     internal static readonly Entry[] All = {
+        new Entry { Version = "3.4.7.0", Title = "Şehir ışınlanma noktaları", Items = new[] {
+            "Şehirlerdeki ışınlanma noktaları (Jangan, Donwhang, Hotan, Constantinople, Samarkand, Nanzhang) artık bulunuyor: oyun yapıyı yalnızca yakına gelince yüklediği için bot kapı noktasında durup \"NPC okunamadı\" diyordu; şimdi yapıya yaklaşıp ışınlanıyor.",
+            "Av modu: kasılma alanı uzaktaysa (150 birimden fazla ya da başka bölgedeyse) bot artık dungeon gezisindeki gibi yol ağı rotasını ve şehir ışınlanmalarını kullanarak alana gider, vardığında avı sürdürür.",
+            "Av / Ayarlar sekmesine \"Hedef filtresi ve koruma\" kartı: hedef seviye aralığı (oyunun kendi canavar tablosundan), yaratık türü işaretleri (Normal, Champion, Giant, Unique, Diğer), HP / MP pot tuşu ve yüzde eşiği, süreli buff tuşları. Seviyesi bilinmeyen yaratık hiçbir zaman dışlanmaz.",
+            "Ölümden sonra çantada Reverse Scroll yoksa bot durmuyor; şehirden kasılma alanına yürüyerek / ışınlanarak döner.",
+            "Dungeon tablosuna \"Seç\" sütunu: istediklerini işaretleyip Ekle / Çıkar'a basınca hepsi, işaretlediğin sırayla sıraya eklenir (başlığa tıklayınca tümünü seçer / bırakır).",
+            "Sıradaki bir dungeona tıklayınca sağda görseli açılır; tablo ile sıra arasındaki çubuğu sürükleyerek tabloyu aşağı doğru büyütebilirsin; etkinlik günlüğü de aynı şekilde yukarı/aşağı sürüklenerek büyütülüp küçültülür.",
+            "Jangan → Donwhang şehir ışınlanması eklendi (oyun tablosundaki bu satır okunamadığı için eksikti): Jangan'dan Hotan'a feribot ve uzun yürüyüş yerine iki ışınlanmayla gidilir.",
+            "Dungeon Exit ve şehir ışınlanmalarında NPC seçildikten sonra NPC ile konuşma adımı eklendi (ışınlanma isteği bu adım olmadan sunucuda işe yaramıyordu).",
+            "Bölge yüklenirken (dungeona giriş/çıkış, ışınlanma) karakter artık \"öldü\" sayılmıyor: yükleme anındaki geçersiz konum atlanıyor, sahte ölüm sayacı ve ölüm sınırında durma engellendi.",
+            "Oyun bir yürüme isteğini anlık reddedince (saldırı animasyonu vb.) bot artık hemen durmuyor; 5 saniye boyunca aralıklı yeniden dener.",
+            "Yaratık bulma: hedef seçim denemesi sayacı yalnızca gerçekten istek gönderilince artar (oyun penceresi öndeyken bile bekleme yüzünden yaratık yasaklanmıyordu); seçim yanıt vermezse yaratık 60 yerine 12 saniye atlanır.",
+            "Uzun yürüyüşte otomatik Return Scroll kullanımı kapatıldı: kayıtlı şehir uzaksa (ör. Nanzhang) scroll karakteri çok uzağa atıp pahalı ışınlanmalara (80.000 altın) yol açabiliyordu. Scroll yalnızca \"Farklı bölgeye giderken önce Return Scroll kullan\" seçeneği işaretliyse okunur.",
+            "Uzak hedeflere (ör. Donwhang → Hotan) şehir ışınlanmasıyla gidilir; yürüyüş yerine ışınlanma rotası kullanılır." } },
         new Entry { Version = "3.4.6.0", Title = "Pencere başlığında karakter adı", Items = new[] {
             "Pencere başlığı karakter adıyla başlar (örn. Rikimaru - New Era · Memory Select ...); iki hesap açıkken görev çubuğunda hangisinin hangisi olduğu görünür." } },
         new Entry { Version = "3.4.5.0", Title = "Tüm dünya için yol haritası ve oda oda tarama", Items = new[] {

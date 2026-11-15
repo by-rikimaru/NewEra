@@ -57,7 +57,7 @@ sealed class DeathRecovery {
    if(!s.PlayerAlive||town==null){townStable=0;Message="Şehre dönüş ve canlı karakter doğrulaması bekleniyor.";return RecoveryAction.None;}
    if(townPoint==null||townPoint.Distance(s.Player)>2){townPoint=s.Player.Copy();townStable=now;}
    Phase=RecoveryPhase.SettlingTown;Message=town+" yüklendi; Reverse Scroll hazırlanıyor.";
-   if(now-townStable>=5000&&focused){if(RecoveryRules.PickReverse(s)==null)return Halt("Çantada kullanılabilir Reverse Return Scroll yok; bot durdu.");Phase=RecoveryPhase.ReverseRequested;Since=now;Message="Reverse: ölüm noktasına dönüş doğrulanıyor.";return RecoveryAction.Reverse;}
+   if(now-townStable>=5000&&focused){if(RecoveryRules.PickReverse(s)==null){Phase=RecoveryPhase.Ready;Message="Reverse Scroll yok; kasılma alanına yürüyerek dönülüyor.";return RecoveryAction.Resume;}Phase=RecoveryPhase.ReverseRequested;Since=now;Message="Reverse: ölüm noktasına dönüş doğrulanıyor.";return RecoveryAction.Reverse;}
   }else if(Phase==RecoveryPhase.ReverseRequested){
    if(s.PlayerAlive&&SameSpace(s.Player,DeathPoint)&&s.Player.Distance(DeathPoint)<=35){Phase=RecoveryPhase.Ready;Message="Ölüm noktasına dönüş doğrulandı; devam ediliyor.";return RecoveryAction.Resume;}
    if(now-Since>90000)return Halt("Reverse dönüşü doğrulanmadı; tekrar scroll tüketilmeden durdu.");
@@ -68,7 +68,7 @@ sealed class DeathRecovery {
 }
 static class MultiTarget {
  internal static Monster Choose(Snapshot s,ISet<string> names,Position center,double radius,IDictionary<uint,long> bans,long now,uint wanted){
-  Func<Monster,bool> ok=m=>m.Alive&&names.Contains(m.Name)&&TargetPolicy.InArea(m.Position,center,radius)&&(!bans.ContainsKey(m.Uid)||bans[m.Uid]<=now);
+  Func<Monster,bool> ok=m=>m.Alive&&names.Contains(m.Name)&&HuntFilter.Allows(m)&&TargetPolicy.InArea(m.Position,center,radius)&&(!bans.ContainsKey(m.Uid)||bans[m.Uid]<=now);
   return s.Monsters.FirstOrDefault(m=>m.Uid==wanted&&ok(m))??s.Monsters.Where(ok).OrderBy(m=>m.Position.Distance(s.Player)).ThenBy(m=>m.Uid).FirstOrDefault();
  }
 }
@@ -102,7 +102,7 @@ sealed class GrimRun {
 }
 static class DungeonExtensions {internal static Position InnerPosition(this DungeonLocation d){return V2Rules.Center(((d.InnerRegion&255)-135)*192+d.InnerX/10,((d.InnerRegion>>8)-92)*192+d.InnerY/10,(float)d.InnerHeight);}}
 sealed class V3Settings {
- public bool ReturnBeforeTravel,TravelMount,AutoEnterGrim;public List<string> DungeonQueue=new List<string>();public bool QueueReturnScroll=true;public bool HideWhatsNew;public List<int> BlockedRoadCells=new List<int>();public string LastSeenVersion="";public List<string> LearnedPaths=new List<string>();public List<string> IgnoredDefaults=new List<string>();public int Theme;public List<string> VisitedDungeons=new List<string>();public bool AutoUpdate=true;public string UpdateManifestUrl="https://github.com/by-rikimaru/NewEra/releases/latest/download/manifest.json";public int HotkeyKey,HotkeyModifiers;public List<string> Mobs=new List<string>();public double X,Y,Range=150;public int Delay=100,Timeout=10,ReviveSeconds=30,DeathLimit=5,Deaths;public string Keys="1 2 3 4 5 6",BerserkClass="Giant";public bool SendKeys=true,GoHome=true,Berserk=true,Speed=true,Repair=true,Recovery=true;
+ public bool ReturnBeforeTravel,TravelMount,AutoEnterGrim;public List<string> DungeonQueue=new List<string>();public bool QueueReturnScroll=true;public bool HideWhatsNew;public List<int> BlockedRoadCells=new List<int>();public string LastSeenVersion="";public List<string> LearnedPaths=new List<string>();public List<string> IgnoredDefaults=new List<string>();public int Theme;public List<string> VisitedDungeons=new List<string>();public bool AutoUpdate=true;public string UpdateManifestUrl="https://github.com/by-rikimaru/NewEra/releases/latest/download/manifest.json";public int HotkeyKey,HotkeyModifiers;public List<string> Mobs=new List<string>();public double X,Y,Range=150;public int Delay=100,Timeout=10,ReviveSeconds=30,DeathLimit=5,Deaths;public string Keys="1 2 3 4 5 6",BerserkClass="Giant";public int HuntMinLevel=1,HuntMaxLevel=255,HpPercent,MpPercent,BuffSeconds=120;public bool KindNormal=true,KindChampion=true,KindGiant=true,KindUnique=true,KindOther=true;public string HpKey="",MpKey="",BuffKeys="";public bool SendKeys=true,GoHome=true,Berserk=true,Speed=true,Repair=true,Recovery=true;
  internal static string DirectoryPath {get{return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Rikimaru","MemorySelectV3",Environment.GetEnvironmentVariable("RIKIMARU_ACCOUNT")=="1"?"Account1":Environment.GetEnvironmentVariable("RIKIMARU_ACCOUNT")=="2"?"Account2":"");}}
  internal static string PathName {get{return Path.Combine(DirectoryPath,"settings.json");}}
  internal static V3Settings Load(){if(!File.Exists(PathName))return new V3Settings();try{return new JavaScriptSerializer().Deserialize<V3Settings>(File.ReadAllText(PathName,Encoding.UTF8))??new V3Settings();}catch{return new V3Settings();}}

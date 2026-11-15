@@ -54,7 +54,7 @@ sealed class ObstaclePath {
 
 enum RouteResult { Working, Arrived, Failed }
 sealed class ObstacleWalker {
- readonly ObstaclePath planner=new ObstaclePath();Position goal,lastGood,segmentStart,command,rollback;int index,replans,rejections;long nextSend,progressAt;double best,tolerance=3;bool searching,backtracking,segmentSent;
+ readonly ObstaclePath planner=new ObstaclePath();Position goal,lastGood,segmentStart,command,rollback;int index,replans,rejections;long nextSend,progressAt,rejectSince;double best,tolerance=3;bool searching,backtracking,segmentSent;
  internal int GridStep=8;internal string Message="";internal bool Active {get{return goal!=null;}}internal bool Backtracking {get{return backtracking;}}
  internal void Reset(){planner.Clear();goal=lastGood=segmentStart=command=rollback=null;index=replans=rejections=0;searching=backtracking=false;nextSend=0;}
  internal void Pause(long elapsed){progressAt+=Math.Max(0,elapsed);nextSend+=Math.Max(0,elapsed);}
@@ -102,7 +102,12 @@ sealed class ObstacleWalker {
   if(now<nextSend)return RouteResult.Working;nextSend=now+400;
   if(allowed!=null&&!allowed(next)){Message="Rota av bölgesi dışına çıkıyor; durdu.";return RouteResult.Failed;}
   if(!probe(current,next)){planner.Block(segmentStart,next);if(++replans>6){Message="Rota tekrar tekrar kapandı.";return RouteResult.Failed;}Search(current,allowed);return RouteResult.Working;}
-  if(move(next))segmentSent=true;else if(++rejections>=3){Message="Hareket isteği kabul edilmedi.";return RouteResult.Failed;}
+  if(move(next)){segmentSent=true;rejections=0;}else{
+   // The client refuses a move now and then (casting, hit reaction): retry for a few seconds before giving up.
+   if(rejections++==0)rejectSince=now;
+   if(rejections>=3&&now-rejectSince>=5000){Message="Hareket isteği kabul edilmedi.";return RouteResult.Failed;}
+   nextSend=now+700;
+  }
   return RouteResult.Working;
  }
 }
