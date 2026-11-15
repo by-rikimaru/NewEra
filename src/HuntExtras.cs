@@ -88,10 +88,12 @@ sealed partial class MemorySelectV3Form {
  // Potions and buffs. Presses at most one key per call and only while the game window is in front.
  void HuntCareTick(long now){
   ApplyHuntFilter();
-  if(heldScan!=0||!reader.IsForeground()||!snapshot.PlayerAlive)return;
+  TrackSkillState();
+  if(heldScan!=0||!CanAct()||!snapshot.PlayerAlive)return;
   ushort key;
   if(HuntCare.NeedHp(snapshot,(int)hpPercent.Value)&&now>=care.NextHp&&(key=HuntCare.KeyOf(hpKey.Text))!=0){if(Press(key)){care.NextHp=now+1500;maintenance.Text="HP düşük: pot kullanıldı.";}return;}
   if(HuntCare.NeedMp(snapshot,(int)mpPercent.Value)&&now>=care.NextMp&&(key=HuntCare.KeyOf(mpKey.Text))!=0){if(Press(key)){care.NextMp=now+1500;maintenance.Text="MP düşük: pot kullanıldı.";}return;}
+  if(SkillsActive){SkillSupportTick(now);return;}
   var buffs=buffKeys.Text.Split(new[]{' ',',',';'},StringSplitOptions.RemoveEmptyEntries).Select(HuntCare.KeyOf).Where(k=>k!=0).ToArray();
   if(buffs.Length==0||operation==OperationMode.Travel)return;
   if(care.NextBuff==0)care.NextBuff=now;

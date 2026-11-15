@@ -9,7 +9,7 @@ sealed partial class MemorySelectV3Form {
  int RunTimeout {get{return (int)timeout.Value;}}
  int RunWait {get{return (int)reviveSeconds.Value;}}
  int RunDeathLimit {get{return (int)deathLimit.Value;}}
- string RunKeys {get{return keys.Text;}}
+ string RunKeys {get{return SkillsActive?SkillKeyText():keys.Text;}}
  string RunBerserkClass {get{return berserkClass.SelectedItem as string;}}
  void StartRequested(){if(active)return;if(tabs.SelectedIndex==2)StartGrimRequested();else Start();}
 }

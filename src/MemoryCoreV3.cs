@@ -47,6 +47,8 @@ sealed class Monster {
  public uint Uid,Model,Address; public string Name;public Position Position;public bool Alive;public uint? Health;public int Rank=-1;public bool Party;
 }
 sealed class Snapshot {
+ // Skill ids of the character's active buffs (read from the same buff list as the speed check).
+ public HashSet<uint> BuffIds=new HashSet<uint>();public bool BuffsKnown;
  public string CharacterName;public bool MountKnown;public uint MountUid;public List<WorldNpc> Npcs=new List<WorldNpc>();public Position Player; public uint Selected;public GrimObservation Grim=new GrimObservation();public bool PlayerAlive;public bool StatsKnown;public uint Hp,MaxHp,Mp,MaxMp,SpExp,Sp;public int Level;public ulong Exp;public int Berserk=-1;public bool SpeedKnown,SpeedActive,InventoryKnown;public int? MinDurability;public List<BagItem> Items=new List<BagItem>();public List<Monster> Monsters=new List<Monster>();
 }
 sealed class GameReader:IDisposable {
@@ -109,8 +111,8 @@ sealed class GameReader:IDisposable {
  internal ushort ItemType(uint model){uint root=U32(baseAddress+0xaedf08+0x25c);uint reference=FindTree(root,model);if(reference==0)return 0;byte[] b=Read(reference+16,8);return BitConverter.ToUInt32(b,4)==model?BitConverter.ToUInt16(b,0):(ushort)0;}
  void ReadMaintenance(uint player,Snapshot snap){
   try {uint head=U32(player+0x288);uint node=head==0?0:U32(head);var seen=new HashSet<uint>();bool valid=true;
-   while(node!=0&&node!=head){if(seen.Count>=256||!seen.Add(node)){valid=false;break;}uint buff=U32(node+8);if(buff!=0){uint type=U32(buff+0x54),skill=U32(buff+0x5c);if((type==2||type==3)&&V2Rules.SpeedSkills.Contains(skill))snap.SpeedActive=true;}node=U32(node);}
-   snap.SpeedKnown=valid;
+   while(node!=0&&node!=head){if(seen.Count>=256||!seen.Add(node)){valid=false;break;}uint buff=U32(node+8);if(buff!=0){uint type=U32(buff+0x54),skill=U32(buff+0x5c);if(skill!=0)snap.BuffIds.Add(skill);if((type==2||type==3)&&V2Rules.SpeedSkills.Contains(skill))snap.SpeedActive=true;}node=U32(node);}
+   snap.SpeedKnown=valid;snap.BuffsKnown=valid;
   }catch(IOException){snap.SpeedKnown=false;}
   try {uint ui=Global(0xd0f80c);uint irm=ui+0x36c;uint inv=FindTree(U32(irm+4),25+U32(irm+44));if(inv==0)throw new IOException("Envanter yok.");
    uint bag=U32(inv+0x7bc),begin=U32(bag+0x3a0),end=U32(bag+0x3a4);if(end<begin||(end-begin)%4!=0||(end-begin)/4>160)throw new IOException("Envanter değişti.");
@@ -142,7 +144,7 @@ static class TargetPolicy {
 // No disk patch, security bypass, DLL replacement or arbitrary opcode is exposed.
 sealed class TargetSender:IDisposable {
  readonly IntPtr process;readonly uint function,moveFunction,reverseFunction,navigationFunction;IntPtr pendingThread,pendingBlock;
- internal TargetSender(GameReader reader){if(reader.SenderAddress==0)throw new InvalidOperationException("Oyun güncellenmiş: GuardyNE.dll sürümü bu botla uyumlu değil, komut gönderme (hedef seçme, yürüme, ışınlanma, eşya) kapalı. Sunucu sahiplerinden yeni sürüm bilgisi gerekiyor. Ayrıntı: "+reader.Compatibility);function=reader.SenderAddress;moveFunction=reader.MoveAddress;reverseFunction=reader.ReverseAddress;navigationFunction=reader.NavigationAddress;
+ internal TargetSender(GameReader reader){if(reader.SenderAddress==0)throw new InvalidOperationException("Oyun güncellenmiş: GuardyNE.dll sürümü bu botla uyumlu değil, komut gönderme (hedef seçme, yürüme, ışınlanma, eşya) kapalı. Skiller sayfasındaki destek modu (yalnız buff / iyileştirme tuşları) yine çalışır. Ayrıntı: "+reader.Compatibility);function=reader.SenderAddress;moveFunction=reader.MoveAddress;reverseFunction=reader.ReverseAddress;navigationFunction=reader.NavigationAddress;
   byte[] thunk=reader.Read(function,5);if(thunk[0]!=0xe9)throw new InvalidOperationException("Seçim işlevi imzası değişmiş.");
   if(!reader.Read(moveFunction,3).SequenceEqual(new byte[]{0x55,0x8b,0xec})||!reader.Read(reverseFunction,3).SequenceEqual(new byte[]{0x55,0x8b,0xec})||!reader.Read(navigationFunction,3).SequenceEqual(new byte[]{0x55,0x8b,0xec}))throw new InvalidOperationException("Hareket / Reverse / navigasyon imzası değişmiş.");
   process=Native.OpenProcess(0x43a,false,reader.Process.Id);if(process==IntPtr.Zero)throw new Win32Exception(Marshal.GetLastWin32Error(),"Hedef seçme erişimi reddedildi.");

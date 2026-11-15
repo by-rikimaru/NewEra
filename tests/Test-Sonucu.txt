@@ -299,6 +299,18 @@ PASS · Queue clears
 PASS · Dungeon Exit NPC teleporter has the Donwhang and Nanzhang destinations in the transit data
 PASS · Dungeon Exit teleporter gate uses the exit NPC model the bot already tracks
 PASS · Level table matches the game data
+PASS · Level 85-90 EXP matches the New Era server table
+PASS · Skill list rotates attack keys and skips disabled rows
+PASS · Class-specific skill is used first, Hepsi list while it cools down
+PASS · Without fallback no key is pressed while the class skill cools down
+PASS · Emergency, heal and mana keys follow HP / MP thresholds
+PASS · Buff with Skill ID is skipped while active; timed buff is cast once
+PASS · Timed buff is renewed after its seconds
+PASS · Missing buff from the character's buff list is cast again
+PASS · Emergency buff fires when enough mobs surround the character
+PASS · Buffs wait while attacking when the option is off
+PASS · Support-only mode never presses attack keys
+PASS · Skill target class matches monster rank
 PASS · Exp gain and per-minute rate are measured from the session
 PASS · SP gain counts the 400-point sub steps
 PASS · An exp loss after a death is never a negative gain

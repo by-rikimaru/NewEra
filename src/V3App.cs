@@ -50,19 +50,19 @@ sealed partial class MemorySelectV3Form:Form {
   }
  }
  void RefreshProcesses(){var previous=processes.SelectedItem as ProcessItem;processes.Items.Clear();foreach(var p in Process.GetProcessesByName("sro_client")){try{processes.Items.Add(new ProcessItem{Id=p.Id,Name=p.ProcessName+".exe | PID "+p.Id+" | "+(p.MainWindowHandle==IntPtr.Zero&&FindClientWindow(p)!=IntPtr.Zero?"SRO_Client (gizli)":p.MainWindowTitle)});}finally{p.Dispose();}}if(previous!=null)processes.SelectedItem=processes.Items.Cast<ProcessItem>().FirstOrDefault(item=>item.Id==previous.Id);if(processes.Items.Count==1)processes.SelectedIndex=0;}
- void Connect(){if(active)return;characterStats.Reset();if(transaction.Pending)throw new InvalidOperationException("Bekleyen eşya işlemi sonuçlanana kadar hedef değiştirilemez.");Stop("Bağlanıyor...");if(reader!=null){reader.Dispose();reader=null;}center=null;area.Text="Bölge set edilmedi. Mevcut X/Y → Bölgeyi set et.";var p=processes.SelectedItem as ProcessItem;if(p==null)throw new InvalidOperationException("Bir oyun işlemi seç.");ClaimClient(p.Id);reader=new GameReader(p.Id,names);snapshot=reader.Capture();FillBoxes(snapshot.Player);UpdateDisplay();status.Text="Bağlı. Yaratığı seç, ardından bölgeyi set et.";}
+ void Connect(){if(active)return;characterStats.Reset();if(transaction.Pending)throw new InvalidOperationException("Bekleyen eşya işlemi sonuçlanana kadar hedef değiştirilemez.");Stop("Bağlanıyor...");if(reader!=null){reader.Dispose();reader=null;}center=null;area.Text="Bölge set edilmedi. Mevcut X/Y → Bölgeyi set et.";var p=processes.SelectedItem as ProcessItem;if(p==null)throw new InvalidOperationException("Bir oyun işlemi seç.");ClaimClient(p.Id);reader=new GameReader(p.Id,names);snapshot=reader.Capture();FillBoxes(snapshot.Player);UpdateDisplay();status.Text="Bağlı. Yaratığı seç, ardından bölgeyi set et.";Log("Bağlandı: "+(string.IsNullOrEmpty(snapshot.CharacterName)?"karakter":snapshot.CharacterName)+(snapshot.Level>0?" · Seviye "+snapshot.Level:"")+" · PID "+p.Id+" · X "+snapshot.Player.X.ToString("F1")+" Y "+snapshot.Player.Y.ToString("F1"));}
  void FillBoxes(Position p){xBox.Value=Math.Max(xBox.Minimum,Math.Min(xBox.Maximum,(decimal)p.X));yBox.Value=Math.Max(yBox.Minimum,Math.Min(yBox.Maximum,(decimal)p.Y));}
  void FillCurrent(){RequireReader();snapshot=reader.Capture();FillBoxes(snapshot.Player);status.Text="X/Y alındı; kaydetmek için Bölgeyi set et.";}
  void SetCenter(){RequireReader();snapshot=reader.Capture();if(!snapshot.Player.Outside)throw new InvalidOperationException("Kapalı harita desteklenmiyor.");center=V2Rules.Center((double)xBox.Value,(double)yBox.Value,snapshot.Player.Height);banned.Clear();area.Text=string.Format("SET · X {0:F1}  Y {1:F1} · Sabit merkez · Range {2}",center.X,center.Y,radius.Value);UpdateDisplay();status.Text="Bölge kaydedildi.";}
  void RequireReader(){if(reader==null)throw new InvalidOperationException("Önce Bağlan / Oku.");}
  void Nearby(){RequireReader();snapshot=reader.Capture();string old=monsters.SelectedItem as string;monsters.Items.Clear();monsters.Items.AddRange(snapshot.Monsters.Select(m=>m.Name).Distinct().OrderBy(n=>n).Cast<object>().ToArray());if(old!=null&&monsters.Items.Contains(old))monsters.SelectedItem=old;if(monsters.Items.Count==1)monsters.SelectedIndex=0;status.Text="Yakındaki isimler listelendi. Bölge merkezi değişmedi.";}
- void Start(){if(active)return;RequireReader();if(center==null||selectedMobs.Count==0)throw new InvalidOperationException("+ ile en az bir yaratık ekle ve Bölgeyi set et.");grim.Stop();BeginOperation(OperationMode.Hunt);}
+ void Start(){if(active)return;RequireReader();if(SkillsActive&&skillsSupport.Checked&&center==null){snapshot=reader.Capture();center=snapshot.Player.Copy();area.Text="Destek modu: merkez karakterin bulunduğu yer.";}if(center==null||(selectedMobs.Count==0&&!(SkillsActive&&skillsSupport.Checked)))throw new InvalidOperationException("+ ile en az bir yaratık ekle ve Bölgeyi set et.");grim.Stop();BeginOperation(OperationMode.Hunt);}
  void BeginOperation(OperationMode mode){if(active)return;if(dualTimer.Enabled)throw new InvalidOperationException("Önce çift hesap pencere geçişini durdur.");RequireReader();if(transaction.Pending)throw new InvalidOperationException("Bekleyen eşya işlemi var.");operation=mode;if(recovery.Deaths>=RunDeathLimit)throw new InvalidOperationException("Ölüm sınırı dolu. İnceledikten sonra ölüm sayacını sıfırla.");snapshot=reader.Capture();if(!snapshot.PlayerAlive)throw new InvalidOperationException("Karakter canlı değil.");if(!snapshot.Player.Outside)throw new InvalidOperationException("Bu kapalı koordinat türü desteklenmiyor.");
   if(mode==OperationMode.Hunt&&(V3Data.IsCrypt(snapshot.Player)||V3Data.IsCrypt(center)))throw new InvalidOperationException("Bu alan için Grim Crypt sekmesini kullan.");
-  var list=new List<ushort>();foreach(string t in RunKeys.ToUpperInvariant().Split(new[]{' ',',',';'},StringSplitOptions.RemoveEmptyEntries)){if(t.Length!=1||!((t[0]>='0'&&t[0]<='9')||(t[0]>='A'&&t[0]<='Z')))throw new InvalidOperationException("Tuşlar: A-Z, 0-9; boşlukla ayır.");list.Add(t[0]);}if(mode!=OperationMode.Travel&&RunSendKeys&&list.Count==0)throw new InvalidOperationException("Saldırı tuşu seç.");if(mode==OperationMode.Grim&&!RunSendKeys)throw new InvalidOperationException("Av / Ayarlar içindeki Hedef doğrulanınca tuşlara bas seçeneğini aç.");
-  if(HotkeyPolicy.Conflicts(shortcutKey,shortcutMods,list,RunZerk))throw new InvalidOperationException("Başlat/durdur kısayolu saldırı veya Berserk tuşuyla aynı. Kısayolu değiştir.");SaveSettings();routeWalker.Reset();routeTarget=0;approachWatch.Reset();movementPoint=previousMovementPoint=null;nextVisibility=0;parsedKeys=list.ToArray();sender=new TargetSender(reader);active=true;operation=mode;wanted=lastRequest=0;attempts=keyIndex=0;nextRequest=nextKey=nextMove=0;returning=false;grimHolding=grimWaiting=false;watch.Reset();zerkLatched=false;care.NextBuff=0;buffIndex=0;recovery.Begin();banned.Clear();foreach(var c in locked)c.Enabled=false;status.Text="Başladı. Oyuna geç.";Log("Başlatıldı: "+mode);}
+  var list=new List<ushort>();foreach(string t in RunKeys.ToUpperInvariant().Split(new[]{' ',',',';'},StringSplitOptions.RemoveEmptyEntries)){if(t.Length!=1||!((t[0]>='0'&&t[0]<='9')||(t[0]>='A'&&t[0]<='Z')))throw new InvalidOperationException("Tuşlar: A-Z, 0-9; boşlukla ayır.");list.Add(t[0]);}if(mode!=OperationMode.Travel&&RunSendKeys&&list.Count==0)throw new InvalidOperationException(SkillsActive?"Skiller listesinde Açık ve geçerli tuşlu bir saldırı satırı olmalı.":"Saldırı tuşu seç.");if(mode==OperationMode.Grim&&!RunSendKeys)throw new InvalidOperationException("Av / Ayarlar içindeki Hedef doğrulanınca tuşlara bas seçeneğini aç.");
+  if(HotkeyPolicy.Conflicts(shortcutKey,shortcutMods,list,RunZerk))throw new InvalidOperationException("Başlat/durdur kısayolu saldırı veya Berserk tuşuyla aynı. Kısayolu değiştir.");SaveSettings();routeWalker.Reset();routeTarget=0;approachWatch.Reset();movementPoint=previousMovementPoint=null;nextVisibility=0;parsedKeys=list.ToArray();try{sender=new TargetSender(reader);}catch(InvalidOperationException e){if(!(mode==OperationMode.Hunt&&SkillsActive&&skillsSupport.Checked))throw;sender=null;Log("Komut gönderme kapalı ("+e.Message.Split('.')[0]+"); destek modu yalnız skill tuşlarıyla çalışacak.");}active=true;operation=mode;wanted=lastRequest=0;attempts=keyIndex=0;nextRequest=nextKey=nextMove=0;returning=false;grimHolding=grimWaiting=false;watch.Reset();zerkLatched=false;care.NextBuff=0;buffIndex=0;planner.Reset();ReadSkillGrid();recovery.Begin();banned.Clear();foreach(var c in locked)c.Enabled=false;status.Text="Başladı. Oyuna geç.";Log("Başlatıldı: "+mode);}
  void Stop(string text){if(queueRunning&&!queueAdvancing){queueRunning=false;UpdateQueueUi();Log("Sıra durduruldu · "+text);}bool wasReturning=active&&snapshot!=null&&snapshot.PlayerAlive&&recovery.Phase==RecoveryPhase.Ready&&(returning||operation==OperationMode.Travel||operation==OperationMode.Grim);routeWalker.Reset();grim.Stop();recovery.Stop();huntReturn=false;huntReturnRetryAt=0;active=false;ReleaseKey();if(sender!=null){
-  if(wasReturning&&reader!=null&&snapshot!=null){try{if(reader.IsForeground())sender.Move(snapshot.Player.Copy());}catch{}}
+  if(wasReturning&&reader!=null&&snapshot!=null){try{if(CanAct())sender.Move(snapshot.Player.Copy());}catch{}}
   sender.Dispose();sender=null;
  }wanted=0;returning=false;watch.Reset();foreach(var c in locked)c.Enabled=true;completionNotice.Dispose();status.Text=text;Log(text);try{SaveSettings();}catch(Exception e){status.Text+=" Ayarlar kaydedilemedi: "+e.Message;}}
  void UpdateDisplay(){if(snapshot==null)return;deathsLabel.Text="Ölüm sayısı: "+recovery.Deaths+" / "+deathLimit.Value+" · "+recovery.Phase;int count=center==null?0:V2Rules.InRange(snapshot,center,(double)radius.Value).Count;
@@ -73,18 +73,18 @@ sealed partial class MemorySelectV3Form:Form {
  void Skip(uint uid,string reason,long now,int ms=60000){banned[uid]=now+ms;wanted=0;attempts=0;lastRequest=0;nextRequest=0;watch.Reset();ReleaseKey();lastEvent=reason+" · UID "+uid+" "+(ms/1000)+" sn atlandı.";status.Text=lastEvent;Log(lastEvent);}
  bool ProcessMaintenance(long now){transaction.Observe(snapshot,now);maintenance.Text=transaction.Message;if(transaction.Pending){ReleaseKey();status.Text="Eşya işleminin sonucu bekleniyor.";return true;}
   string kind=null;BagItem item=null;if(RunRepair&&!transaction.RepairPaused&&V2Rules.NeedsRepair(snapshot)){kind="repair";item=V2Rules.PickItem(snapshot.Items,true);}else if(RunSpeed&&!transaction.SpeedPaused&&snapshot.InventoryKnown&&snapshot.SpeedKnown&&!snapshot.SpeedActive){kind="speed";item=V2Rules.PickItem(snapshot.Items,false);}
-  if(item==null)return false;if(!reader.IsForeground()||!reader.ValidateItem(item))return true;ReleaseKey();transaction.Begin(kind,item,snapshot,now);
+  if(item==null)return false;if(!CanAct()||!reader.ValidateItem(item))return true;ReleaseKey();transaction.Begin(kind,item,snapshot,now);
   if(!sender.Use(item)){transaction.Kind=null;transaction.Rejected(kind);}maintenance.Text=transaction.Message;watch.Pause(10000);return true;
  }
  bool WalkChecked(Position destination,long now,Func<Position,bool> allowed,string label,bool skipOnFailure){
-  ReleaseKey();if(!reader.IsForeground())return false;if(operation==OperationMode.Travel&&travelMount.Checked&&!EnsureTravelMount(true,now))return false;
+  ReleaseKey();if(!CanAct())return false;if(operation==OperationMode.Travel&&travelMount.Checked&&!EnsureTravelMount(true,now))return false;
   routeWalker.GridStep=operation==OperationMode.Travel||(operation==OperationMode.Grim&&grim.Rooms!=null)?4:8;var result=routeWalker.Tick(snapshot.Player,destination,now,ClimbSafeProbe(sender,operation==OperationMode.Travel),p=>{bool accepted=sender.Move(p);Log("Hareket · X "+p.X.ToString("F1")+" Y "+p.Y.ToString("F1")+" kabul="+accepted);return accepted;},allowed,operation==OperationMode.Travel?ExpeditionRules.ArrivalDistance:3);
   status.Text=label+" · "+routeWalker.Message;
-  if(result==RouteResult.Failed){string reason=routeWalker.Message;routeWalker.Reset();if(TryReplanRoad(reason))return false;if(skipOnFailure&&wanted!=0){if(reader.IsForeground())sender.Move(snapshot.Player.Copy());Skip(wanted,reason,now);routeTarget=0;}else Stop(reason);}
+  if(result==RouteResult.Failed){string reason=routeWalker.Message;routeWalker.Reset();if(TryReplanRoad(reason))return false;if(skipOnFailure&&wanted!=0){if(CanAct())sender.Move(snapshot.Player.Copy());Skip(wanted,reason,now);routeTarget=0;}else Stop(reason);}
   return result==RouteResult.Arrived;
  }
  void ReturnHome(long now){ReleaseKey();if(snapshot.Player.Distance(center)<=2.5){returning=false;routeWalker.Reset();status.Text="Merkezde; uygun hedef bekleniyor.";return;}
-  if(!goHome.Checked){if(routeWalker.Active){routeWalker.Reset();if(reader.IsForeground())sender.Move(snapshot.Player.Copy());}status.Text="Uygun hedef yok; merkeze dönüş kapalı.";return;}
+  if(!goHome.Checked){if(routeWalker.Active){routeWalker.Reset();if(CanAct())sender.Move(snapshot.Player.Copy());}status.Text="Uygun hedef yok; merkeze dönüş kapalı.";return;}
   if(!returning){routeWalker.Reset();returning=true;}
   if(WalkChecked(center,now,null,"Merkeze rota",false))returning=false;
  }
@@ -96,11 +96,12 @@ sealed partial class MemorySelectV3Form:Form {
   bool began=(!active||(snapshot.PlayerAlive&&recovery.Phase==RecoveryPhase.Ready))&&grim.Observe(snapshot);grimStatus.Text=grim.Message+"\r\nHUD: "+snapshot.Grim.Title+" · "+snapshot.Grim.Text;
   if(began&&!active){BeginOperation(OperationMode.Grim);Log("Dungeon algılandı: "+grim.Location);}
   if(!active)return;
-  bool foreground=reader.IsForeground();int before=recovery.Deaths;RecoveryAction recoveryAction=recovery.Observe(snapshot,now,foreground,RunRecovery,RunWait,RunDeathLimit);
+  if(sender==null){if(!CanAct()){ReleaseKey();status.Text="Bekliyor: oyun önde değil.";return;}HuntCareTick(now);status.Text="Destek modu (komut gönderme kapalı): yalnız buff / iyileştirme tuşları.";return;}
+  bool foreground=CanAct();int before=recovery.Deaths;RecoveryAction recoveryAction=recovery.Observe(snapshot,now,foreground,RunRecovery,RunWait,RunDeathLimit);
   if(before!=recovery.Deaths){routeWalker.Reset();ReleaseKey();wanted=0;watch.Reset();SaveSettings();Log("Ölüm "+recovery.Deaths+" · X "+snapshot.Player.X+" Y "+snapshot.Player.Y);}
   if(recoveryAction==RecoveryAction.Stop){Stop(recovery.Message);return;}
-  if(recoveryAction==RecoveryAction.ReturnTown){ReleaseKey();if(!reader.IsForeground())return;if(!sender.ReturnTown()){Stop("Şehre dönüş isteği reddedildi; tekrar gönderilmedi.");return;}Log("Şehre dönüş isteği gönderildi.");}
-  if(recoveryAction==RecoveryAction.Reverse){ReleaseKey();BagItem reverse=RecoveryRules.PickReverse(snapshot);if(reverse==null||!reader.IsForeground()||!reader.ValidateItem(reverse)){Stop("Reverse eşyası / ön pencere doğrulanamadı.");return;}if(!sender.ReverseToDeath(reverse)){Stop("Reverse isteği reddedildi; tekrar eşya kullanılmadı.");return;}Log("Reverse ölüm noktası: eşya "+reverse.Model);}
+  if(recoveryAction==RecoveryAction.ReturnTown){ReleaseKey();if(!CanAct())return;if(!sender.ReturnTown()){Stop("Şehre dönüş isteği reddedildi; tekrar gönderilmedi.");return;}Log("Şehre dönüş isteği gönderildi.");}
+  if(recoveryAction==RecoveryAction.Reverse){ReleaseKey();BagItem reverse=RecoveryRules.PickReverse(snapshot);if(reverse==null||!CanAct()||!reader.ValidateItem(reverse)){Stop("Reverse eşyası / ön pencere doğrulanamadı.");return;}if(!sender.ReverseToDeath(reverse)){Stop("Reverse isteği reddedildi; tekrar eşya kullanılmadı.");return;}Log("Reverse ölüm noktası: eşya "+reverse.Model);}
   if(recoveryAction==RecoveryAction.Resume){routeWalker.Reset();wanted=lastRequest=0;watch.Reset();returning=false;if(travel.Destination!=null)travel.Set(travel.Destination,snapshot.Player,now);nextMove=nextKey=now+1000;Log(recovery.Message);}
   if(recovery.Phase!=RecoveryPhase.Ready){ReleaseKey();status.Text=recovery.Message;watch.Pause(elapsed);return;}
   if(operation==OperationMode.Grim&&!grim.Running&&!grim.Complete){Stop(grim.Message);return;}
@@ -108,6 +109,7 @@ sealed partial class MemorySelectV3Form:Form {
   if(!snapshot.Player.Outside){Stop("Desteklenmeyen kapalı koordinat türüne geçildi.");return;}
   if(snapshot.Berserk>=0&&snapshot.Berserk<5)zerkLatched=false;if(ProcessMaintenance(now)){approachWatch.Pause(elapsed);routeWalker.Pause(elapsed);return;}
   HuntCareTick(now);RecordExit();if(operation==OperationMode.Grim&&QueueAfterComplete(now))return;
+  if(operation==OperationMode.Hunt&&SkillsActive&&skillsSupport.Checked){ReleaseKey();status.Text="Destek modu: saldırı yok, yalnız buff / iyileştirme.";return;}
   if(operation==OperationMode.Travel){ExpeditionTick(now);return;}
   Monster target;
   if(operation==OperationMode.Grim){int mapBudget=snapshot.Monsters.Any(m=>m.Alive&&grim.IsRegion(m.Position))?0:48;grim.MapStep(snapshot,sender,mapBudget);target=grim.Choose(snapshot,banned,now,wanted);}
@@ -130,18 +132,19 @@ sealed partial class MemorySelectV3Form:Form {
   }
   if(RunSendKeys&&watch.Stuck(target,snapshot.Player,now,(long)RunTimeout*1000)){Skip(target.Uid,"Can/mesafe ilerlemesi yok",now);return;}
   if(snapshot.Selected!=target.Uid){ReleaseKey();if(now<nextRequest)return;if(lastRequest!=target.Uid){lastRequest=target.Uid;attempts=0;}if(attempts>=3){Skip(target.Uid,"Hedef seçimi yanıt vermedi",now,12000);return;}
-   bool valid=operation==OperationMode.Grim?reader.ValidateAnyTarget(target):reader.ValidateTarget(target,center,(double)radius.Value);if(!reader.IsForeground()||!valid)return;if(!sender.Send(target.Uid)){Skip(target.Uid,"Seçim reddedildi",now);return;}attempts++;nextRequest=now+350;status.Text="Hedef doğrulanıyor: "+target.Uid;return;}
+   bool valid=operation==OperationMode.Grim?reader.ValidateAnyTarget(target):reader.ValidateTarget(target,center,(double)radius.Value);if(!CanAct()||!valid)return;if(!sender.Send(target.Uid)){Skip(target.Uid,"Seçim reddedildi",now);return;}attempts++;nextRequest=now+350;status.Text="Hedef doğrulanıyor: "+target.Uid;return;}
   status.Text="Hedef: "+target.Name+" · "+V2Rules.ClassName(target)+" · UID "+target.Uid;
   if(RunZerk&&snapshot.Berserk==5&&!zerkLatched&&heldScan==0&&V2Rules.BerserkMatches(target,RunBerserkClass)){if(Press(9)){zerkLatched=true;maintenance.Text="Berserk: "+V2Rules.ClassName(target)+" hedefinde Tab.";nextKey=now+200;}return;}
-  if(RunSendKeys&&parsedKeys.Length>0&&now>=nextKey&&heldScan==0){if(Press(parsedKeys[keyIndex])){keyIndex=(keyIndex+1)%parsedKeys.Length;nextKey=now+RunDelay;}}
+  if(SkillsActive)SkillAttackTick(target,now);
+  else if(RunSendKeys&&parsedKeys.Length>0&&now>=nextKey&&heldScan==0){if(Press(parsedKeys[keyIndex])){keyIndex=(keyIndex+1)%parsedKeys.Length;nextKey=now+RunDelay;}}
  }catch(Exception e){Stop(e.Message);Log(e.ToString());}}
  void TravelTick(long now){if(WalkChecked(travel.Destination,now,null,"Girişe yürüyor: "+grim.Location,false))Stop("Dungeon girişine ulaşıldı. Oyun menüsünden istediğin modu seçip giriş yap.");}
  void HoldGrim(string message){
-  ReleaseKey();if(!grimWaiting&&reader!=null&&sender!=null&&reader.IsForeground())sender.Move(snapshot.Player.Copy());grimWaiting=true;routeWalker.Reset();grim.Route.Clear();grim.Waypoint=0;status.Text=message;grim.Message=message;
+  ReleaseKey();if(!grimWaiting&&reader!=null&&sender!=null&&CanAct())sender.Move(snapshot.Player.Copy());grimWaiting=true;routeWalker.Reset();grim.Route.Clear();grim.Waypoint=0;status.Text=message;grim.Message=message;
  }
  void GrimExplore(long now){
   ReleaseKey();routeTarget=0;
-  if(!grimHolding){if(reader.IsForeground())sender.Move(snapshot.Player.Copy());routeWalker.Reset();grim.Route.Clear();grim.Waypoint=0;grimHolding=true;grimWaiting=true;}
+  if(!grimHolding){if(CanAct())sender.Move(snapshot.Player.Copy());routeWalker.Reset();grim.Route.Clear();grim.Waypoint=0;grimHolding=true;grimWaiting=true;}
   if(grim.Rooms!=null){
    Position point=grim.Rooms.Next(snapshot.Player);
    if(point==null){HoldGrim(grim.Rooms.Status+" · bulunduğu yerde bekliyor");return;}
@@ -163,9 +166,9 @@ sealed partial class MemorySelectV3Form:Form {
   if(WalkChecked(goal,now,grim.IsRegion,"Diğer oda / alan kontrolü · "+floor.Covered.Count+" / "+floor.Cells.Count,false)){grim.Route.Clear();grim.Waypoint=0;}
   grim.Message=status.Text;
  }
- bool Press(ushort key){uint pid;uint thread=Native.GetWindowThreadProcessId(Native.GetForegroundWindow(),out pid);if(reader==null||pid!=reader.Process.Id)return false;ushort scan=(ushort)Native.MapVirtualKeyEx(key,0,Native.GetKeyboardLayout(thread));if(scan==0||!SendScan(scan,false)){Stop("Tuş gönderimi reddedildi.");return false;}heldScan=scan;release.Start();return true;}
+ bool Press(ushort key){uint pid;uint thread=Native.GetWindowThreadProcessId(Native.GetForegroundWindow(),out pid);if(reader==null)return false;if(pid!=reader.Process.Id)return skillsBackground.Checked&&heldScan==0&&PostKey(key);ushort scan=(ushort)Native.MapVirtualKeyEx(key,0,Native.GetKeyboardLayout(thread));if(scan==0||!SendScan(scan,false)){Stop("Tuş gönderimi reddedildi.");return false;}heldScan=scan;release.Start();return true;}
  bool SendScan(ushort scan,bool up){var input=new Native.INPUT();input.type=1;input.data.key.scan=scan;input.data.key.flags=8u|(up?2u:0u);return Native.SendInput(1,new[]{input},Marshal.SizeOf(typeof(Native.INPUT)))==1;}
- void ReleaseKey(){release.Stop();if(heldScan!=0){if(SendScan(heldScan,true))heldScan=0;else{active=false;release.Start();status.Text="Tuş bırakılamadı; otomasyon durdu.";}}}
+ void ReleaseKey(){release.Stop();if(heldScan!=0&&heldPosted){ReleasePostedKey();return;}if(heldScan!=0){if(SendScan(heldScan,true))heldScan=0;else{active=false;release.Start();status.Text="Tuş bırakılamadı; otomasyon durdu.";}}}
  protected override void OnShown(EventArgs e){base.OnShown(e);RegisterShortcut();SetupUpdates();BeginInvoke(new Action(ShowWhatsNew));}
  protected override void WndProc(ref Message m){if(m.Msg==0x312&&m.WParam.ToInt32()==1){try{HandleShortcut();}catch(Exception e){Stop(e.Message);}}base.WndProc(ref m);}
  protected override void OnFormClosed(FormClosedEventArgs e){completionNotice.Dispose();dualTimer.Stop();dualTimer.Dispose();ReleaseClientClaim();poll.Stop();updateTimer.Stop();updateTimer.Dispose();Stop("Kapatıldı.");Native.UnregisterHotKey(Handle,1);try{SaveSettings();}catch{}if(reader!=null)reader.Dispose();poll.Dispose();release.Dispose();base.OnFormClosed(e);}

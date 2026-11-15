@@ -10,6 +10,16 @@ static class ReleaseNotes {
 
     // Newest first.
     internal static readonly Entry[] All = {
+        new Entry { Version = "3.4.8.0", Title = "Skiller sayfası, yeni kenar çubuğu ve seviye EXP düzeltmesi", Items = new[] {
+            "Oyun güncellemesiyle GuardyNE.dll değişince komut gönderme (hedef seçme, yürüme, ışınlanma, eşya) kapalı kalır; Skiller sayfasındaki destek modu bu durumda da yalnız buff / iyileştirme tuşlarıyla çalışır. Kullanıcı hataları günlüğe artık uzun teknik ayrıntı olmadan yazılır.",
+            "Yeni Skiller sayfası: hotbar tuşlarını türe göre (Saldırı, Buff, Acil buff, İyileştirme, Mana) listele. Saldırı skill'leri hedef türüne (Normal, Champion, Giant, Unique, Diğer) ve yakındaki mob sayısına göre sırayla basılır; türe özel skill beklemedeyse Hepsi listesi kullanılır. Liste Av ve Grim Crypt için ortaktır.",
+            "Skill ID girilen buff'lar karakterin gerçek buff listesine bakılarak bittiğinde yeniden basılır; Skill ID yoksa Süre sn dolunca yenilenir. \"Aktif buffları ekle\" o an üzerindeki buffları ID'leriyle listeye ekler. Dirilince ve ışınlanınca bufflar yenilenir.",
+            "Acil buff can belirlenen yüzdenin altına düşünce ya da etrafı (20 birim) belirlenen sayıda mob sarınca basılır; İyileştirme ve Mana satırları HP / MP yüzdesine göre çalışır. Destek modu (Cleric, Bard gibi) saldırmadan yalnız buff ve iyileştirme yapar.",
+            "Skill profilleri adla kaydedilip yüklenebilir; hazır şablonlar (temel saldırı, alan saldırısı, savunma buff seti, destek vb.) listeye tek tıkla eklenir.",
+            "\"Oyun önde değilken de tuşları gönder (arka plan)\" seçeneği: oyun arkadayken de tuşlar oyun penceresine gönderilir ve av sürer. \"Arka plan tuşunu sına\" düğmesi listedeki bir tuşa basıp oyunun tepki verip vermediğini (MP, HP, buff değişimi) bildirir.",
+            "Bağlan / Oku sonrası etkinlik günlüğüne \"Bağlandı: karakter · seviye · PID · konum\" satırı yazılır; artık günlük \"Bağlanıyor...\" satırında kalmıyor.",
+            "Sol menü yenilendi: sayfalar \"Çalışma\" (Av / Ayarlar, Explorer Yerleri, Grim Crypt) ve \"Araçlar\" başlıkları altında gruplandı; her sayfanın kendine özel çizilmiş ikonu var (nişangah, pusula, mahzen kapısı, indirme, iki karakter, NPC, liste). Seçili sayfa yuvarlak vurgu ve tema rengiyle gösterilir; ikonlar her temaya uyar.",
+            "Karakter durumundaki EXP çubuğu 85–89. seviyelerde yanlış hedef gösteriyordu (ör. 85'te 206.925.087 yerine 2.483.101.044 olmalı); seviye tablosu oyunun kendi değerleriyle düzeltildi, yüzde ve seviyeye kalan süre artık doğru." } },
         new Entry { Version = "3.4.7.0", Title = "Şehir ışınlanma noktaları", Items = new[] {
             "Şehirlerdeki ışınlanma noktaları (Jangan, Donwhang, Hotan, Constantinople, Samarkand, Nanzhang) artık bulunuyor: oyun yapıyı yalnızca yakına gelince yüklediği için bot kapı noktasında durup \"NPC okunamadı\" diyordu; şimdi yapıya yaklaşıp ışınlanıyor.",
             "Av modu: kasılma alanı uzaktaysa (150 birimden fazla ya da başka bölgedeyse) bot artık dungeon gezisindeki gibi yol ağı rotasını ve şehir ışınlanmalarını kullanarak alana gider, vardığında avı sürdürür.",
